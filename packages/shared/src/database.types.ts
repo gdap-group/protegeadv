@@ -582,11 +582,11 @@ export type Database = {
           data_inicio: string
           data_fim: string | null
           renovacao_automatica: boolean
-          valor: number | null
           arquivo_id: string | null
           excluido_em: string | null
           criado_em: string
           atualizado_em: string
+          criado_por: string | null
         }
         Insert: {
           id?: string
@@ -597,11 +597,11 @@ export type Database = {
           data_inicio: string
           data_fim?: string | null
           renovacao_automatica?: boolean
-          valor?: number | null
           arquivo_id?: string | null
           excluido_em?: string | null
           criado_em?: string
           atualizado_em?: string
+          criado_por?: string | null
         }
         Update: {
           id?: string
@@ -612,11 +612,11 @@ export type Database = {
           data_inicio?: string
           data_fim?: string | null
           renovacao_automatica?: boolean
-          valor?: number | null
           arquivo_id?: string | null
           excluido_em?: string | null
           criado_em?: string
           atualizado_em?: string
+          criado_por?: string | null
         }
         Relationships: [
           {
@@ -631,6 +631,13 @@ export type Database = {
             columns: ["arquivo_id"]
             isOneToOne: false
             referencedRelation: "ged_arquivos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
             referencedColumns: ["id"]
           },
         ]

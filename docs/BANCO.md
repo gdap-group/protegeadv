@@ -62,9 +62,9 @@ Abaixo estão todas as 39 tabelas ativas no banco de dados, divididas por módul
 ### 1.7 Contratos de Honorários
 | Tabela | Descrição |
 | :--- | :--- |
-| `contratos` | Contratos de prestação de serviços e honorários com clientes, vigência, renovação automática e valores (RLS restrita a donos e advogados). |
+| `contratos` | Contratos de prestação de serviços e honorários com clientes, vigência, renovação automática e criador (`criado_por`), sem campos financeiros (PRD Seção 12 e 18), com RLS restrita via `pode_ver_contrato()`. |
 | `contrato_partes` | Clientes contratantes (pessoas), contratados internos e responsáveis associados ao contrato. |
-| `contrato_processos` | Associação N:N entre contratos de honorários e processos patrocinados. |
+| `contrato_processos` | Associação N:N entre contratos de honorários e processos patrocinados (com restrição dupla de `pode_ver_contrato` e `pode_ver_processo`). |
 
 ### 1.8 Notificações e Comunicação
 | Tabela | Descrição |

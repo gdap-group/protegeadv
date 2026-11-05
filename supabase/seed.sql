@@ -557,7 +557,7 @@ insert into compromisso_envolvidos (conta_id, compromisso_id, usuario_id, papel)
 -- ---------------------------------------------------------------------------
 -- 25. Contratos: Contratos de Honorários, Partes e Vínculos com Processos
 -- ---------------------------------------------------------------------------
-insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, data_fim, renovacao_automatica, valor) values
+insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, data_fim, renovacao_automatica) values
   -- Conta 1 (Escritório) - Contrato 1
   (
     '10000000-0000-0000-0000-000000000130',
@@ -567,8 +567,7 @@ insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, d
     'ativo',
     '2026-01-10',
     '2027-01-09',
-    true,
-    15000.00
+    true
   ),
   -- Conta 1 (Escritório) - Contrato 2
   (
@@ -579,8 +578,7 @@ insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, d
     'ativo',
     '2026-03-01',
     '2027-02-28',
-    false,
-    28000.00
+    false
   ),
   -- Conta 2 (Empresa) - Contrato 1
   (
@@ -591,8 +589,7 @@ insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, d
     'ativo',
     '2026-01-01',
     '2026-12-31',
-    true,
-    50000.00
+    true
   ),
   -- Conta 2 (Empresa) - Contrato 2
   (
@@ -603,8 +600,7 @@ insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, d
     'ativo',
     '2026-02-15',
     '2027-02-14',
-    false,
-    35000.00
+    false
   );
 
 insert into contrato_partes (conta_id, contrato_id, pessoa_id, usuario_id, papel) values

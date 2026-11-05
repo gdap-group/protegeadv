@@ -4,6 +4,27 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
 
 ---
 
+## [2026-11-05] Passo 2.3 Concluído: Visibilidade Granular de Contratos (Migration 0010) e Teste de Isolamento Universal Aprovado
+
+### O que foi feito:
+- [x] Criação de [0010_visibilidade_contratos.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0010_visibilidade_contratos.sql):
+  - Função `public.pode_ver_contrato(p_contrato_id uuid)` com `security definer` e `search_path = public`, evitando recursão mútua de RLS.
+  - Regra de visibilidade para advogado restrito: vê contratos em que é parte (`contrato_partes`), criador (`criado_por`) ou vinculados a pelo menos um processo para o qual `pode_ver_processo()` é verdadeiro.
+  - Adição de `criado_por uuid references usuarios(id) default auth.uid()` em `contratos` garantindo suporte imediato a `INSERT ... RETURNING *`.
+  - Remoção de `contratos.valor` (campo não previsto no PRD Seções 12 e 18), com ajuste em [supabase/seed.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/seed.sql) e regeneração das tipagens via `pnpm db:types`.
+  - Substituição das políticas de `contratos`, `contrato_partes` e `contrato_processos` para exigirem `pode_ver_contrato()`, com exigência adicional de `pode_ver_processo(processo_id)` em `contrato_processos`.
+- [x] Atualização de [teste_isolamento_completo.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/tests/teste_isolamento_completo.sql) cobrindo todos os cenários granulares:
+  - Advogado restrito bloqueado em contratos de processos restritos.
+  - Advogado restrito enxerga contratos em que é parte (mesmo sem processos).
+  - Advogado restrito enxerga contratos de processos permitidos.
+  - Criador restrito enxerga o contrato criado logo em seguida com `INSERT ... RETURNING`.
+  - Dono e advogado sem restrição enxergam todos os contratos.
+  - Estagiário e leitura continuam bloqueados integralmente.
+- [x] Validação do "teste do teste": remoção propositada de `pode_ver_contrato()` de uma política faz o teste falhar e acusar o nome da política.
+- [x] Execução de todas as suítes com 100% de aprovação: `pnpm test:db` (0 falhas), `pnpm lint` (0 erros), `pnpm typecheck` (0 erros) e `pnpm test` (9 testes unitários aprovados).
+
+---
+
 ## [2026-10-16] Automação de CI com GitHub Actions e Governança de Decisões
 
 ### O que foi feito:

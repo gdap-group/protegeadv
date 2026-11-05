@@ -9,6 +9,9 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **packageManager no package.json:** Fixa a versão exata do pnpm (`pnpm@10.17.1`), garantindo compatibilidade determinística com `pnpm/action-setup` no CI do GitHub Actions sem duplicar chaves.
 - **Vitest:** Execução de testes em ESM nativo com suporte direto a TypeScript e ambientes isolados (`jsdom` e `node`) em workspaces.
 - **CI (GitHub Actions):** Automação em todo push e pull request com cache de dependências que bloqueia qualquer falha de lint, typecheck ou teste.
+- **Teste de Isolamento Universal no CI:** Validação de 100% das tabelas do schema public via catálogo do PostgreSQL (`pg_class` e `pg_policy`) executada em PGlite ou Supabase via `pnpm test:db`.
+- **Visibilidade Granular de Contratos (ADR 011):** Função `pode_ver_contrato()` com `security definer` para evitar recursão de RLS e garantir restrição de visualização para advogados restritos, partes e criador.
+- **Aderência Estrita ao PRD em Contratos:** Remoção de `contratos.valor` em conformidade com as Seções 12 e 18 do PRD.
 
 ---
 
@@ -83,4 +86,33 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Contexto:** Usuários com restrição de visibilidade (`restringir_a_responsavel = true`) só podem visualizar processos em que atuem como responsáveis ou envolvidos (PRD 3.3). Compromissos de prazos ou audiências vinculados a esses processos não podem vazar informações a terceiros.
 - **Decisão:** A tabela `compromissos` e a tabela associativa `compromisso_envolvidos` impõem a validação `(processo_id is null or pode_ver_processo(processo_id))` nas políticas de RLS.
 - **Motivo:** Garante que a agenda e o kanban do escritório mantenham o mesmo sigilo rigoroso das pastas processuais sem qualquer vazamento de dados via registros filhos.
+
+---
+
+## ADR 010: Teste Dinâmico Universal de Isolamento e RLS via Catálogo
+- **Status:** Aceito
+- **Contexto:** Garantir que nenhuma tabela do banco passe para homologação/produção sem RLS habilitado ou sem políticas estritas de isolamento por `conta_id`, independente de futuras migrações criarem novas tabelas.
+- **Decisão:** Criação de `supabase/tests/teste_isolamento_completo.sql` e do runner `scripts/run_test_db.mjs` (`pnpm test:db`), inspecionando dinamicamente `pg_class` e `pg_policy` para todas as tabelas de `public`.
+- **Motivo:** Detecção antecipada e determinística de falhas de segurança no CI antes de qualquer merge ou deploy, sem depender de testes manuais tabela por tabela.
+
+---
+
+## ADR 011: Visibilidade Granular de Contratos via Função Security Definer e Remoção de Campo Inexistente no PRD
+- **Status:** Aceito
+- **Contexto:**
+  1. A auditoria de RLS revelou que advogados restritos (`restringir_a_responsavel = true`) visualizavam contratos e vínculos de `contrato_processos` associados a processos restritos.
+  2. Políticas diretas com subconsultas cruzadas entre `contratos` e `contrato_processos` causam recursão infinita no PostgreSQL (`infinite recursion detected in policy for relation ...`).
+  3. A coluna `contratos.valor` foi criada na migration 0009 mas não existe no PRD (Seção 12 e Seção 18 afirmam expressamente que o módulo não faz lançamento financeiro).
+- **Decisão:**
+  1. Implementação de `public.pode_ver_contrato(p_contrato_id uuid)` com `security definer` e `search_path = public`:
+     - Dono: vê qualquer contrato da própria conta.
+     - Advogado sem restrição: vê qualquer contrato da própria conta.
+     - Advogado com restrição: vê o contrato apenas se for o criador (`criado_por = auth.uid()`), for parte em `contrato_partes` (`usuario_id = auth.uid()`), ou se o contrato estiver associado em `contrato_processos` a pelo menos um processo visível via `pode_ver_processo(processo_id)`.
+     - Estagiário e leitura: sempre falso.
+  2. Adição da coluna `criado_por uuid references usuarios(id) default auth.uid()` em `contratos` e inclusão de `criado_por = auth.uid()` na política `contratos_ver` para garantir compatibilidade imediata com comandos `INSERT ... RETURNING *`.
+  3. Aplicação de `pode_ver_contrato()` em todas as políticas de `contratos`, `contrato_partes` e `contrato_processos` (com exigência adicional de `pode_ver_processo(processo_id)` nesta última).
+  4. Remoção da coluna `contratos.valor` via `alter table contratos drop column valor` na migration 0010 e ajuste em `seed.sql`.
+- **Motivo:** O uso de `security definer` permite que a função avalie a visibilidade de processos e partes sem re-disparar as políticas de RLS das tabelas envolvidas, eliminando recursão cíclica enquanto garante isolamento rigoroso e conformidade absoluta com o PRD.
+
+
 

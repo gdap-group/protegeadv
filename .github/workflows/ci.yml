@@ -37,3 +37,6 @@ jobs:
 
       - name: Rodar Testes Automatizados (Vitest)
         run: pnpm test
+
+      - name: Rodar Teste de Isolamento do Banco (PGlite)
+        run: pnpm test:db
