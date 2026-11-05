@@ -37,14 +37,9 @@ async function generate() {
     CREATE OR REPLACE FUNCTION auth.role() RETURNS text LANGUAGE sql STABLE AS $$ SELECT coalesce(nullif(current_setting('request.jwt.claim.role', true), ''), 'anon')::text $$;
   `);
 
-  const migrations = [
-    '0001_nucleo.sql',
-    '0002_empresas_etiquetas_campos.sql',
-    '0003_partes_andamentos_buscas_leituras.sql',
-    '0004_publicacoes_distribuicoes_termos.sql',
-    '0005_ged_modelos_avisos.sql',
-    '0006_auditoria_consultas_expurgo.sql'
-  ];
+  const migrations = fs.readdirSync('supabase/migrations')
+    .filter(f => f.endsWith('.sql'))
+    .sort();
 
   for (const m of migrations) {
     let sql = fs.readFileSync(path.join('supabase/migrations', m), 'utf8');

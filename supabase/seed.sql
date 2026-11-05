@@ -11,6 +11,17 @@ begin;
 -- ---------------------------------------------------------------------------
 -- 1. Limpeza de dados de seed anteriores (idempotência)
 -- ---------------------------------------------------------------------------
+delete from contrato_processos where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from contrato_partes where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from contratos where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from compromisso_envolvidos where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from compromissos where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from feriados where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from pessoa_outros_nomes where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from pessoa_contatos where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+update partes_processo set pessoa_id = null where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+update empresas_monitoradas set pessoa_id = null where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
+delete from pessoas where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
 delete from consultas_externas where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
 delete from registro_atividade where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
 delete from registro_acesso where conta_id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
@@ -372,5 +383,246 @@ insert into registro_atividade (conta_id, usuario_id, acao, entidade, entidade_i
 insert into registro_acesso (conta_id, usuario_id, email, ip, resultado) values
   ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000001', 'carlos.silva@silvasantos.adv.br', '189.100.20.15', 'sucesso'),
   ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000002', 'lucas.adv@vanguarda.com.br', '201.55.10.88', 'sucesso');
+
+-- ---------------------------------------------------------------------------
+-- 23. Pessoas, Contatos e Outros Nomes
+-- ---------------------------------------------------------------------------
+insert into pessoas (id, conta_id, tipo, nome, nome_fantasia, cpf_cnpj, perfis, dados_pf, observacoes) values
+  -- Conta 1 (Escritório)
+  (
+    '10000000-0000-0000-0000-000000000101',
+    '11111111-1111-1111-1111-111111111111',
+    'pf',
+    'João da Silva Sauro',
+    null,
+    '12345678901',
+    '{cliente}',
+    '{"mae":"Maria Sauro","pai":"José Sauro","profissao":"Engenheiro","estado_civil":"Casado"}'::jsonb,
+    'Cliente prioritário do contencioso cível.'
+  ),
+  (
+    '10000000-0000-0000-0000-000000000102',
+    '11111111-1111-1111-1111-111111111111',
+    'pj',
+    'Banco do Brasil S.A.',
+    'Banco do Brasil',
+    '00000000000191',
+    '{parte_contraria}',
+    '{}'::jsonb,
+    'Instituição financeira ré em ações revisionais.'
+  ),
+  (
+    '10000000-0000-0000-0000-000000000103',
+    '11111111-1111-1111-1111-111111111111',
+    'pf',
+    'Maria de Lourdes Santos',
+    null,
+    '98765432100',
+    '{cliente}',
+    '{"mae":"Ana Santos","profissao":"Médica","estado_civil":"Solteira"}'::jsonb,
+    'Ação de cobrança de honorários médicos.'
+  ),
+  -- Conta 2 (Empresa)
+  (
+    '20000000-0000-0000-0000-000000000101',
+    '22222222-2222-2222-2222-222222222222',
+    'pf',
+    'Carlos Eduardo Pereira',
+    null,
+    '11122233344',
+    '{parte_contraria}',
+    '{"profissao":"Operador de Logística"}'::jsonb,
+    'Reclamante em ação trabalhista contra a empresa.'
+  ),
+  (
+    '20000000-0000-0000-0000-000000000102',
+    '22222222-2222-2222-2222-222222222222',
+    'pj',
+    'Transportadora Rápido Sol Ltda',
+    'Rápido Sol Log',
+    '22333444000155',
+    '{cliente,outro}',
+    '{}'::jsonb,
+    'Fornecedor e parceiro estratégico de fretes.'
+  ),
+  (
+    '20000000-0000-0000-0000-000000000103',
+    '22222222-2222-2222-2222-222222222222',
+    'pf',
+    'Dra. Juliana Mendes',
+    null,
+    '55566677788',
+    '{advogado}',
+    '{"oab":"123456/SP"}'::jsonb,
+    'Patrona externa acompanhando defesas estratégicas.'
+  );
+
+insert into pessoa_contatos (conta_id, pessoa_id, tipo, valor, rotulo, is_whatsapp) values
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000101', 'whatsapp', '11999990001', 'Celular pessoal', true),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000101', 'email', 'joao.sauro@email.com', 'Comercial', false),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000103', 'whatsapp', '11988880002', 'Celular', true),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000101', 'email', 'carlos.pereira@trabalho.com', 'Principal', false),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000102', 'telefone', '1133334444', 'Sede', false);
+
+insert into pessoa_outros_nomes (conta_id, pessoa_id, nome) values
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000101', 'João Silva Sauro'),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000102', 'Banco do Brasil'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000102', 'Rapido Sol Transportes');
+
+-- Atualização das FKs com as pessoas criadas
+update partes_processo set pessoa_id = '10000000-0000-0000-0000-000000000101'
+ where conta_id = '11111111-1111-1111-1111-111111111111'
+   and processo_id = '11000000-0000-0000-0000-000000000001'
+   and polo = 'ativo';
+
+update partes_processo set pessoa_id = '20000000-0000-0000-0000-000000000101'
+ where conta_id = '22222222-2222-2222-2222-222222222222'
+   and processo_id = '22000000-0000-0000-0000-000000000001'
+   and polo = 'ativo';
+
+update empresas_monitoradas set pessoa_id = '20000000-0000-0000-0000-000000000102'
+ where conta_id = '22222222-2222-2222-2222-222222222222';
+
+-- ---------------------------------------------------------------------------
+-- 24. Agenda: Feriados, Compromissos e Envolvidos
+-- ---------------------------------------------------------------------------
+insert into feriados (conta_id, data, descricao, abrangencia, uf) values
+  ('11111111-1111-1111-1111-111111111111', '2026-01-01', 'Confraternização Universal', 'nacional', null),
+  ('11111111-1111-1111-1111-111111111111', '2026-04-21', 'Tiradentes', 'nacional', null),
+  ('11111111-1111-1111-1111-111111111111', '2026-05-01', 'Dia do Trabalho', 'nacional', null),
+  ('11111111-1111-1111-1111-111111111111', '2026-07-09', 'Revolução Constitucionalista', 'estadual', 'SP'),
+  ('11111111-1111-1111-1111-111111111111', '2026-11-15', 'Proclamação da República', 'nacional', null),
+  ('22222222-2222-2222-2222-222222222222', '2026-01-01', 'Confraternização Universal', 'nacional', null),
+  ('22222222-2222-2222-2222-222222222222', '2026-05-01', 'Dia do Trabalho', 'nacional', null),
+  ('22222222-2222-2222-2222-222222222222', '2026-11-15', 'Proclamação da República', 'nacional', null);
+
+insert into compromissos (id, conta_id, processo_id, tipo, status, titulo, descricao, data_hora_inicio, data_hora_fim, dia_inteiro) values
+  -- Conta 1 (Escritório): compromissos vinculados a processos
+  (
+    '10000000-0000-0000-0000-000000000120',
+    '11111111-1111-1111-1111-111111111111',
+    '11000000-0000-0000-0000-000000000001',
+    'prazo',
+    'pendente',
+    'Prazo: Contestação Cível',
+    'Apresentar peça de contestação com preliminares de mérito.',
+    '2026-11-10 18:00:00-03',
+    '2026-11-10 18:00:00-03',
+    false
+  ),
+  (
+    '10000000-0000-0000-0000-000000000121',
+    '11111111-1111-1111-1111-111111111111',
+    '11000000-0000-0000-0000-000000000002',
+    'audiencia',
+    'pendente',
+    'Audiência de Conciliação e Saneamento',
+    'Audiência virtual perante a 2ª Vara Cível da Capital.',
+    '2026-11-18 14:00:00-03',
+    '2026-11-18 15:30:00-03',
+    false
+  ),
+  -- Conta 2 (Empresa): compromissos vinculados a processos
+  (
+    '20000000-0000-0000-0000-000000000120',
+    '22222222-2222-2222-2222-222222222222',
+    '22000000-0000-0000-0000-000000000001',
+    'audiencia',
+    'pendente',
+    'Audiência Trabalhista Telepresencial',
+    'Oitiva das testemunhas e preposto da reclamada.',
+    '2026-11-12 10:00:00-03',
+    '2026-11-12 11:30:00-03',
+    false
+  ),
+  (
+    '20000000-0000-0000-0000-000000000121',
+    '22222222-2222-2222-2222-222222222222',
+    '22000000-0000-0000-0000-000000000002',
+    'prazo',
+    'pendente',
+    'Prazo: Recurso Ordinário Trabalhista',
+    'Protocolar recurso ordinário contra sentença procedente em parte.',
+    '2026-11-16 23:59:00-03',
+    '2026-11-16 23:59:00-03',
+    false
+  );
+
+insert into compromisso_envolvidos (conta_id, compromisso_id, usuario_id, papel) values
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000120', '10000000-0000-0000-0000-000000000001', 'responsavel'),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000121', '10000000-0000-0000-0000-000000000002', 'responsavel'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000120', '20000000-0000-0000-0000-000000000002', 'responsavel'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000121', '20000000-0000-0000-0000-000000000002', 'responsavel');
+
+-- ---------------------------------------------------------------------------
+-- 25. Contratos: Contratos de Honorários, Partes e Vínculos com Processos
+-- ---------------------------------------------------------------------------
+insert into contratos (id, conta_id, codigo, descricao, situacao, data_inicio, data_fim, renovacao_automatica, valor) values
+  -- Conta 1 (Escritório) - Contrato 1
+  (
+    '10000000-0000-0000-0000-000000000130',
+    '11111111-1111-1111-1111-111111111111',
+    'HON-2026-001',
+    'Contrato de Prestação de Serviços Advocatícios - Contencioso Cível João Sauro',
+    'ativo',
+    '2026-01-10',
+    '2027-01-09',
+    true,
+    15000.00
+  ),
+  -- Conta 1 (Escritório) - Contrato 2
+  (
+    '10000000-0000-0000-0000-000000000131',
+    '11111111-1111-1111-1111-111111111111',
+    'HON-2026-002',
+    'Contrato de Honorários Médicos e Assessoria Jurídica Dra. Maria Lourdes',
+    'ativo',
+    '2026-03-01',
+    '2027-02-28',
+    false,
+    28000.00
+  ),
+  -- Conta 2 (Empresa) - Contrato 1
+  (
+    '20000000-0000-0000-0000-000000000130',
+    '22222222-2222-2222-2222-222222222222',
+    'CTR-EMP-2026-01',
+    'Contrato de Prestação de Serviços e Logística Rápido Sol',
+    'ativo',
+    '2026-01-01',
+    '2026-12-31',
+    true,
+    50000.00
+  ),
+  -- Conta 2 (Empresa) - Contrato 2
+  (
+    '20000000-0000-0000-0000-000000000131',
+    '22222222-2222-2222-2222-222222222222',
+    'CTR-EMP-2026-02',
+    'Assessoria Jurídica Externa Contencioso Estratégico',
+    'ativo',
+    '2026-02-15',
+    '2027-02-14',
+    false,
+    35000.00
+  );
+
+insert into contrato_partes (conta_id, contrato_id, pessoa_id, usuario_id, papel) values
+  -- Conta 1
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000130', '10000000-0000-0000-0000-000000000101', null, 'contratante'),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000130', null, '10000000-0000-0000-0000-000000000001', 'contratado'),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000131', '10000000-0000-0000-0000-000000000103', null, 'contratante'),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000131', null, '10000000-0000-0000-0000-000000000002', 'responsavel'),
+  -- Conta 2
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000130', '20000000-0000-0000-0000-000000000102', null, 'contratante'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000130', null, '20000000-0000-0000-0000-000000000001', 'responsavel'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000131', '20000000-0000-0000-0000-000000000103', null, 'contratado'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000131', null, '20000000-0000-0000-0000-000000000002', 'responsavel');
+
+insert into contrato_processos (conta_id, contrato_id, processo_id) values
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000130', '11000000-0000-0000-0000-000000000001'),
+  ('11111111-1111-1111-1111-111111111111', '10000000-0000-0000-0000-000000000131', '11000000-0000-0000-0000-000000000002'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000130', '22000000-0000-0000-0000-000000000001'),
+  ('22222222-2222-2222-2222-222222222222', '20000000-0000-0000-0000-000000000131', '22000000-0000-0000-0000-000000000002');
 
 commit;

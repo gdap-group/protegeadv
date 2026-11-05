@@ -58,3 +58,28 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Contexto:** Garantir a integridade da base de código antes de qualquer mesclagem, prevenindo regressões de tipos, formatação e testes quebrados.
 - **Decisão:** Workflow `.github/workflows/ci.yml` rodando em todo `push` e `pull_request`, executando `pnpm install --frozen-lockfile`, `pnpm lint`, `pnpm typecheck` e `pnpm test` com cache de dependências.
 - **Motivo:** Automação em todo push e pull request com cache de dependências que bloqueia qualquer falha de lint, typecheck ou teste.
+
+---
+
+## ADR 007: Gestão de Feriados e Suspensões de Prazos por Conta (`conta_id`)
+- **Status:** Aceito
+- **Contexto:** Conforme a Seção 9.4 (RF-AGE-11) do PRD, cada escritório atua em foros e tribunais específicos e precisa gerenciar não apenas feriados nacionais, mas também feriados estaduais, municipais e portarias de suspensão de prazos forenses emitidas por tribunais específicos.
+- **Decisão:** A tabela `feriados` foi criada como entidade multi-tenant vinculada obrigatoriamente a `conta_id`, pré-carregada por conta com feriados nacionais e customizável com feriados regionais.
+- **Motivo:** Evita colisão entre contas com jurisdições distintas, respeita a integridade do isolamento via RLS e atende ao requisito de cálculo customizado de contagem de prazos sem poluição de dados globais.
+
+---
+
+## ADR 008: Bloqueio Rigoroso de Estagiário e Leitura em Contratos via RLS
+- **Status:** Aceito
+- **Contexto:** O PRD Seção 3 (linha 70) determina explicitamente que estagiários não podem ver contratos de honorários e valores financeiros, e usuários de perfil leitura não possuem permissão de escrita.
+- **Decisão:** As políticas de RLS das tabelas `contratos`, `contrato_partes` e `contrato_processos` exigem explicitamente `perfil_atual() in ('dono', 'advogado')`, além da checagem modular `pode('contratos', acao)`.
+- **Motivo:** Defesa em profundidade. Mesmo que uma conta crie inadvertidamente um grupo de permissões com `pode_ver = true` e adicione um estagiário, a camada de banco de dados (RLS) rejeita a consulta ou mutação de dados contratuais.
+
+---
+
+## ADR 009: Herança de Visibilidade de Processos em Compromissos da Agenda
+- **Status:** Aceito
+- **Contexto:** Usuários com restrição de visibilidade (`restringir_a_responsavel = true`) só podem visualizar processos em que atuem como responsáveis ou envolvidos (PRD 3.3). Compromissos de prazos ou audiências vinculados a esses processos não podem vazar informações a terceiros.
+- **Decisão:** A tabela `compromissos` e a tabela associativa `compromisso_envolvidos` impõem a validação `(processo_id is null or pode_ver_processo(processo_id))` nas políticas de RLS.
+- **Motivo:** Garante que a agenda e o kanban do escritório mantenham o mesmo sigilo rigoroso das pastas processuais sem qualquer vazamento de dados via registros filhos.
+

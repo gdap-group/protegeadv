@@ -233,6 +233,150 @@ export type Database = {
           },
         ]
       }
+      compromisso_envolvidos: {
+        Row: {
+          id: string
+          conta_id: string
+          compromisso_id: string
+          usuario_id: string
+          papel: string
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          compromisso_id: string
+          usuario_id: string
+          papel?: string
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          compromisso_id?: string
+          usuario_id?: string
+          papel?: string
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compromisso_envolvidos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromisso_envolvidos_compromisso_id_fkey"
+            columns: ["compromisso_id"]
+            isOneToOne: false
+            referencedRelation: "compromissos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromisso_envolvidos_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compromissos: {
+        Row: {
+          id: string
+          conta_id: string
+          processo_id: string | null
+          publicacao_id: string | null
+          tipo: Database["public"]["Enums"]["compromisso_tipo"]
+          status: Database["public"]["Enums"]["compromisso_status"]
+          titulo: string
+          descricao: string | null
+          data_hora_inicio: string
+          data_hora_fim: string | null
+          dia_inteiro: boolean
+          origem: string
+          recorrencia: Json | null
+          lembretes: Json
+          concluido_em: string | null
+          concluido_por: string | null
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          processo_id?: string | null
+          publicacao_id?: string | null
+          tipo?: Database["public"]["Enums"]["compromisso_tipo"]
+          status?: Database["public"]["Enums"]["compromisso_status"]
+          titulo: string
+          descricao?: string | null
+          data_hora_inicio: string
+          data_hora_fim?: string | null
+          dia_inteiro?: boolean
+          origem?: string
+          recorrencia?: Json | null
+          lembretes?: Json
+          concluido_em?: string | null
+          concluido_por?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          processo_id?: string | null
+          publicacao_id?: string | null
+          tipo?: Database["public"]["Enums"]["compromisso_tipo"]
+          status?: Database["public"]["Enums"]["compromisso_status"]
+          titulo?: string
+          descricao?: string | null
+          data_hora_inicio?: string
+          data_hora_fim?: string | null
+          dia_inteiro?: boolean
+          origem?: string
+          recorrencia?: Json | null
+          lembretes?: Json
+          concluido_em?: string | null
+          concluido_por?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compromissos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "processos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_publicacao_id_fkey"
+            columns: ["publicacao_id"]
+            isOneToOne: false
+            referencedRelation: "publicacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_concluido_por_fkey"
+            columns: ["concluido_por"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consultas_externas: {
         Row: {
           id: string
@@ -315,6 +459,180 @@ export type Database = {
           atualizado_em?: string
         }
         Relationships: [
+        ]
+      }
+      contrato_partes: {
+        Row: {
+          id: string
+          conta_id: string
+          contrato_id: string
+          pessoa_id: string | null
+          usuario_id: string | null
+          papel: Database["public"]["Enums"]["contrato_parte_papel"]
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          contrato_id: string
+          pessoa_id?: string | null
+          usuario_id?: string | null
+          papel?: Database["public"]["Enums"]["contrato_parte_papel"]
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          contrato_id?: string
+          pessoa_id?: string | null
+          usuario_id?: string | null
+          papel?: Database["public"]["Enums"]["contrato_parte_papel"]
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_partes_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_partes_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_partes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_partes_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_processos: {
+        Row: {
+          id: string
+          conta_id: string
+          contrato_id: string
+          processo_id: string
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          contrato_id: string
+          processo_id: string
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          contrato_id?: string
+          processo_id?: string
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_processos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_processos_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contrato_processos_processo_id_fkey"
+            columns: ["processo_id"]
+            isOneToOne: false
+            referencedRelation: "processos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contratos: {
+        Row: {
+          id: string
+          conta_id: string
+          codigo: string
+          descricao: string | null
+          situacao: Database["public"]["Enums"]["contrato_situacao"]
+          data_inicio: string
+          data_fim: string | null
+          renovacao_automatica: boolean
+          valor: number | null
+          arquivo_id: string | null
+          excluido_em: string | null
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          codigo: string
+          descricao?: string | null
+          situacao?: Database["public"]["Enums"]["contrato_situacao"]
+          data_inicio: string
+          data_fim?: string | null
+          renovacao_automatica?: boolean
+          valor?: number | null
+          arquivo_id?: string | null
+          excluido_em?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          codigo?: string
+          descricao?: string | null
+          situacao?: Database["public"]["Enums"]["contrato_situacao"]
+          data_inicio?: string
+          data_fim?: string | null
+          renovacao_automatica?: boolean
+          valor?: number | null
+          arquivo_id?: string | null
+          excluido_em?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_arquivo_id_fkey"
+            columns: ["arquivo_id"]
+            isOneToOne: false
+            referencedRelation: "ged_arquivos"
+            referencedColumns: ["id"]
+          },
         ]
       }
       distribuicoes: {
@@ -423,6 +741,13 @@ export type Database = {
             referencedRelation: "contas"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "empresas_monitoradas_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
         ]
       }
       etiqueta_vinculos: {
@@ -495,6 +820,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "etiquetas_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feriados: {
+        Row: {
+          id: string
+          conta_id: string
+          data: string
+          descricao: string
+          abrangencia: string
+          uf: string | null
+          municipio: string | null
+          tribunal: string | null
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          data: string
+          descricao: string
+          abrangencia?: string
+          uf?: string | null
+          municipio?: string | null
+          tribunal?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          data?: string
+          descricao?: string
+          abrangencia?: string
+          uf?: string | null
+          municipio?: string | null
+          tribunal?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feriados_conta_id_fkey"
             columns: ["conta_id"]
             isOneToOne: false
             referencedRelation: "contas"
@@ -931,6 +1303,13 @@ export type Database = {
             referencedRelation: "processos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "partes_processo_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pedidos_busca: {
@@ -983,6 +1362,152 @@ export type Database = {
             columns: ["processo_id"]
             isOneToOne: false
             referencedRelation: "processos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pessoa_contatos: {
+        Row: {
+          id: string
+          conta_id: string
+          pessoa_id: string
+          tipo: string
+          valor: string
+          rotulo: string | null
+          is_whatsapp: boolean
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          pessoa_id: string
+          tipo: string
+          valor: string
+          rotulo?: string | null
+          is_whatsapp?: boolean
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          pessoa_id?: string
+          tipo?: string
+          valor?: string
+          rotulo?: string | null
+          is_whatsapp?: boolean
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoa_contatos_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoa_contatos_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pessoa_outros_nomes: {
+        Row: {
+          id: string
+          conta_id: string
+          pessoa_id: string
+          nome: string
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          pessoa_id: string
+          nome: string
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          pessoa_id?: string
+          nome?: string
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoa_outros_nomes_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pessoa_outros_nomes_pessoa_id_fkey"
+            columns: ["pessoa_id"]
+            isOneToOne: false
+            referencedRelation: "pessoas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pessoas: {
+        Row: {
+          id: string
+          conta_id: string
+          tipo: Database["public"]["Enums"]["pessoa_tipo"]
+          nome: string
+          nome_fantasia: string | null
+          cpf_cnpj: string | null
+          perfis: Database["public"]["Enums"]["pessoa_perfil"][]
+          dados_pf: Json | null
+          observacoes: string | null
+          excluido_em: string | null
+          criado_em: string
+          atualizado_em: string
+        }
+        Insert: {
+          id?: string
+          conta_id: string
+          tipo: Database["public"]["Enums"]["pessoa_tipo"]
+          nome: string
+          nome_fantasia?: string | null
+          cpf_cnpj?: string | null
+          perfis?: Database["public"]["Enums"]["pessoa_perfil"][]
+          dados_pf?: Json | null
+          observacoes?: string | null
+          excluido_em?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Update: {
+          id?: string
+          conta_id?: string
+          tipo?: Database["public"]["Enums"]["pessoa_tipo"]
+          nome?: string
+          nome_fantasia?: string | null
+          cpf_cnpj?: string | null
+          perfis?: Database["public"]["Enums"]["pessoa_perfil"][]
+          dados_pf?: Json | null
+          observacoes?: string | null
+          excluido_em?: string | null
+          criado_em?: string
+          atualizado_em?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pessoas_conta_id_fkey"
+            columns: ["conta_id"]
+            isOneToOne: false
+            referencedRelation: "contas"
             referencedColumns: ["id"]
           },
         ]
@@ -1630,8 +2155,12 @@ export type Database = {
       andamento_origem: "automatico" | "manual"
       aviso_canal: "email" | "whatsapp" | "sistema"
       aviso_estado: "enviado" | "entregue" | "lido" | "falhou"
+      compromisso_status: "pendente" | "em_andamento" | "concluido" | "cancelado"
+      compromisso_tipo: "prazo" | "audiencia" | "atividade"
       conta_situacao: "ativa" | "suspensa" | "cancelada"
       conta_tipo: "escritorio" | "empresa"
+      contrato_parte_papel: "contratante" | "contratado" | "responsavel"
+      contrato_situacao: "ativo" | "vencido" | "renovado" | "encerrado" | "arquivado"
       distribuicao_situacao: "caixa" | "arquivada" | "ignorada" | "aceita"
       leitura_item_tipo: "andamento" | "publicacao"
       modelo_proprietario: "sistema" | "conta"
@@ -1642,6 +2171,8 @@ export type Database = {
       parte_polo: "ativo" | "passivo" | "outro"
       pedido_busca_estado: "em_processamento" | "processada" | "monitorando" | "nao_monitorada" | "erro" | "arquivada"
       perfil_usuario: "dono" | "advogado" | "estagiario" | "leitura"
+      pessoa_perfil: "cliente" | "parte_contraria" | "advogado" | "testemunha" | "outro" | "orgao"
+      pessoa_tipo: "pf" | "pj"
       processo_status: "indefinido" | "ativo" | "suspenso" | "baixado" | "encerrado" | "arquivado"
       publicacao_situacao: "nova" | "lida" | "arquivada"
       publicacao_vinculo: "automatico" | "manual" | "nenhum"

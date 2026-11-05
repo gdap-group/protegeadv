@@ -160,9 +160,32 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
   - O MCP do Supabase (`supabase-mcp-server`) está apontando para o projeto errado (`qlrxponkhpvfvepnxmzo`) e **NÃO deve ser usado para aplicar migrations**.
   - A aplicação das migrations `0002` a `0006` e do `seed.sql` deve ser feita manualmente via SQL Editor no dashboard oficial do projeto dev (`dvqrlgoqfsxrcjkfytfj`).
 
+## [2026-11-05] Conclusão das Migrations 0007, 0008 e 0009: Pessoas, Agenda e Contratos
+
+### O que foi feito:
+- [x] Criação da migration `0007_pessoas.sql` (Módulo 10 do PRD):
+  - Tabelas `pessoas`, `pessoa_contatos` e `pessoa_outros_nomes`.
+  - Unicidade de `cpf_cnpj` por conta quando preenchido e não excluído.
+  - Vínculos e FKs adicionados via `ALTER TABLE` em `partes_processo` e `empresas_monitoradas`.
+  - RLS ativada com 4 políticas CRUD completas em todas as tabelas.
+- [x] Criação da migration `0008_agenda.sql` (Módulo 9 do PRD):
+  - Tabelas `compromissos`, `compromisso_envolvidos` e `feriados`.
+  - Herança de visibilidade processual: compromisso e envolvidos só visíveis a quem tem acesso ao processo (`pode_ver_processo`).
+  - Gestão de feriados com abrangência nacional, estadual, municipal e por tribunal isolada por conta.
+  - RLS ativada com 4 políticas CRUD completas em todas as tabelas.
+- [x] Criação da migration `0009_contratos.sql` (Módulo 12 do PRD):
+  - Tabelas `contratos`, `contrato_partes` e `contrato_processos`.
+  - Bloqueio estrito de estagiário e somente leitura via RLS (`perfil_atual() in ('dono', 'advogado')`).
+  - Unicidade de código de contrato por conta.
+  - RLS ativada com 4 políticas CRUD completas em todas as tabelas.
+- [x] Atualização de `supabase/seed.sql` com cobertura de 100% das 39 tabelas para ambas as contas (Silva & Associados e TechCorp), incluindo 4 contratos e compromissos com processos.
+- [x] Regeração dos tipos TypeScript via `pnpm db:types` (`packages/shared/src/database.types.ts`).
+- [x] Atualização dos documentos `docs/BANCO.md`, `docs/DECISOES.md` (ADRs 007, 008 e 009) e `docs/PROGRESSO.md`.
+
 ### Próximos passos:
-- [ ] Aplicar as migrations `0002` até `0006` e o `seed.sql` no SQL Editor do Supabase Dashboard (projeto remoto).
+- [ ] Aplicar as migrations `0002` até `0009` e o `seed.sql` no SQL Editor do Supabase Dashboard (projeto remoto).
 - [ ] Implementar casca de navegação do front-end (`apps/web`) seguindo `docs/DESIGN.md` (tema escuro com roxo, sem gráficos).
 - [ ] Implementar Caixa de Entrada de Publicações (Módulo 7 do PRD).
+
 
 
