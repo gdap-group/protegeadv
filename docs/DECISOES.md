@@ -12,6 +12,7 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Teste de Isolamento Universal no CI:** Validação de 100% das tabelas do schema public via catálogo do PostgreSQL (`pg_class` e `pg_policy`) executada em PGlite ou Supabase via `pnpm test:db`.
 - **Visibilidade Granular de Contratos (ADR 011):** Função `pode_ver_contrato()` com `security definer` para evitar recursão de RLS e garantir restrição de visualização para advogados restritos, partes e criador.
 - **Aderência Estrita ao PRD em Contratos:** Remoção de `contratos.valor` em conformidade com as Seções 12 e 18 do PRD.
+- **Região de Ambientes e Teste de Isolamento Remoto (ADR 012):** Projeto dev (`dvqrlgoqfsxrcjkfytfj`) em `us-east-1` tolerado exclusivamente para testes e homologação com dados sintéticos, mantendo a obrigatoriedade estrita de `sa-east-1` (São Paulo) para produção conforme PRD 19. Validação de isolamento executada contra o banco real via `pnpm test:db:remoto`.
 
 ---
 
@@ -113,6 +114,19 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
   3. Aplicação de `pode_ver_contrato()` em todas as políticas de `contratos`, `contrato_partes` e `contrato_processos` (com exigência adicional de `pode_ver_processo(processo_id)` nesta última).
   4. Remoção da coluna `contratos.valor` via `alter table contratos drop column valor` na migration 0010 e ajuste em `seed.sql`.
 - **Motivo:** O uso de `security definer` permite que a função avalie a visibilidade de processos e partes sem re-disparar as políticas de RLS das tabelas envolvidas, eliminando recursão cíclica enquanto garante isolamento rigoroso e conformidade absoluta com o PRD.
+
+---
+
+## ADR 012: Região de Ambientes Supabase e Validação de Isolamento no Banco Remoto
+- **Status:** Aceito
+- **Contexto:**
+  1. O projeto remoto Supabase vinculado para desenvolvimento (`dvqrlgoqfsxrcjkfytfj`) foi criado na região `us-east-1` (North Virginia), enquanto a Seção 19 do PRD exige que os servidores fiquem no Brasil (`sa-east-1` - São Paulo).
+  2. É crucial validar que as 39 tabelas e 577 regras de RLS operem de forma idêntica e sem anomalias na infraestrutura real hospedada do Supabase (PostgreSQL 17 gerenciado), e não apenas no emulador local PGlite.
+- **Decisão:**
+  1. Aceitar o projeto dev `dvqrlgoqfsxrcjkfytfj` na região `us-east-1` estritamente para propósitos de testes, desenvolvimento e homologação com dados fictícios (`supabase/seed.sql`). Nenhum dado pessoal ou processual real poderá ser inserido ou trafegar nesta instância.
+  2. Reafirmar a exigência mandante do PRD 19 de que o ambiente de Produção (`protege-adv-prod`) deve ser provisionado obrigatoriamente na região `sa-east-1` (São Paulo), prevenindo bloqueios por geolocalização por parte do DJEN, DataJud e tribunais brasileiros, além de conformidade com a LGPD.
+  3. Adição do script `pnpm test:db:remoto` (`scripts/run_test_db.mjs --remote`) com validação defensiva do project-ref no `.env`, checagem prévia do schema (39 tabelas e 2 contas) e execução transacional segura com `ROLLBACK` de `teste_isolamento_completo.sql`.
+- **Motivo:** Permite avançar no desenvolvimento e validação técnica imediata com o ambiente cloud já ativo, sem custos adicionais de provisionamento imediato de novas instâncias, preservando a governança e o bloqueio estrito para o lançamento produtivo.
 
 
 

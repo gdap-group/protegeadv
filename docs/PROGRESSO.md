@@ -4,6 +4,43 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
 
 ---
 
+## [2026-11-05] Aplicação de Migrations 0001 a 0010 e Teste de Isolamento no Supabase Real (dev: dvqrlgoqfsxrcjkfytfj)
+
+### O que foi feito:
+- [x] **Alinhamento do Banco Remoto:**
+  - Aplicação integral das migrations `0001_nucleo.sql` a `0010_visibilidade_contratos.sql` e do seed de desenvolvimento fictício (`supabase/seed.sql`) via `supabase db reset --linked`.
+  - Histórico de migrações (`supabase_migrations.schema_migrations`) 100% alinhado com o repositório local.
+- [x] **Conferência Prévia Somente de Leitura no Supabase Remoto:**
+  - 39 tabelas do schema `public` verificadas: todas com Row Level Security (RLS) habilitada e contagem de políticas IDÊNTICA ao ambiente local PGlite.
+  - Funções essenciais confirmadas no banco remoto: `conta_atual`, `perfil_atual`, `pode`, `pode_ver_processo` e `pode_ver_contrato`.
+  - Privilégios dos papéis `anon` e `authenticated` verificados nas 39 tabelas (garantindo que o Postgres avalie o RLS sem bypass indevido).
+- [x] **Implementação e Execução do Teste de Isolamento no Supabase Remoto:**
+  - Criação do comando `pnpm test:db:remoto` (`scripts/run_test_db.mjs --remote`).
+  - Verificação defensiva de segurança: lê `SUPABASE_DB_URL` do `.env` sem jamais expor a credencial em saídas ou logs, e aborta caso o project-ref não contenha `dvqrlgoqfsxrcjkfytfj`.
+  - Validação estática antes da execução: exige exatamente 39 tabelas em `public` e 2 contas registradas.
+  - Execução da suíte completa de isolamento (`supabase/tests/teste_isolamento_completo.sql`) dentro de transação com `ROLLBACK`.
+  - **Resultado:** 39 tabelas varridas, 577 asserções executadas, **0 falhas** (100% de sucesso no PostgreSQL gerenciado na nuvem).
+- [x] **Atualização Documental e Governança:**
+  - [docs/AMBIENTES.md](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/docs/AMBIENTES.md): Registrada a região `us-east-1` (North Virginia) para o projeto dev atual com dados sintéticos, reiterando a obrigatoriedade estrita de `sa-east-1` (São Paulo) para produção conforme Seção 19 do PRD.
+  - [docs/DECISOES.md](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/docs/DECISOES.md): Formalização da ADR 012 detalhando a estratégia de ambientes e a validação remota de segurança.
+
+
+---
+
+## [2026-11-05] Verificação Somente de Leitura do Supabase Remoto (CLI Linked)
+
+### O que foi verificado:
+- [x] **Project-ref confirmado:** O projeto vinculado via Supabase CLI é `dvqrlgoqfsxrcjkfytfj` (registrado em `supabase/.temp/project-ref`).
+- [x] **Diagnóstico de `supabase migration list`:**
+  - Todas as 10 migrations locais (`0001` a `0010`) aparecem sem registro correspondente na coluna `Remote`.
+  - A migration `0001` não está registrada na tabela de histórico remoto (`supabase_migrations.schema_migrations`), embora sua estrutura já exista no banco remoto.
+- [x] **Diagnóstico de `supabase db push --dry-run`:**
+  - O CLI indica que tentaria aplicar em lote todas as migrações: `0001_nucleo.sql` até `0010_visibilidade_contratos.sql`.
+  - **Risco detectado:** Rodar `supabase db push` diretamente falhará ao tentar recriar tabelas da 0001 (ex: `contas`).
+  - **Solução recomendada para alinhamento:** Executar `supabase migration repair --status applied 0001` antes de enviar as migrações 0002 a 0010 (aguardando autorização explícita).
+
+---
+
 ## [2026-11-05] Passo 2.3 Concluído: Visibilidade Granular de Contratos (Migration 0010) e Teste de Isolamento Universal Aprovado
 
 ### O que foi feito:

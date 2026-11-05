@@ -4,25 +4,27 @@ Este guia descreve, passo a passo e de forma simples, como configurar os ambient
 
 ---
 
-## 1. Criar os Projetos na Nuvem do Supabase (Região São Paulo)
+## 1. Criar os Projetos na Nuvem do Supabase
 
-Conforme a seção 19 do PRD, os servidores e bancos do sistema devem estar obrigatoriamente localizados no Brasil para evitar bloqueios das fontes judiciais nacionais (DJEN/DataJud).
+### Região e Conformidade Regulatória (PRD Seção 19)
+- **Produção (`protege-adv-prod`):** Deve estar OBRIGATORIAMENTE localizada no Brasil (**`South America (São Paulo) - sa-east-1`**). Conforme a seção 19 do PRD, os servidores e bancos de dados em produção devem operar no Brasil para conformidade com a LGPD e para evitar bloqueios por geolocalização ou filtros de tráfego das fontes judiciais nacionais (DJEN/DataJud/tribunais).
+- **Desenvolvimento / Homologação (`protege-adv-dev`):** O projeto dev atualmente provisionado (`dvqrlgoqfsxrcjkfytfj`) está localizado em **`East US (North Virginia) - us-east-1`**. Para desenvolvimento e homologação com dados exclusivamente sintéticos e fictícios (como os gerados por `supabase/seed.sql`), essa região é perfeitamente aceitável e não infringe os requisitos de privacidade e fontes reais. No entanto, nenhum dado real de clientes ou credenciais produtivas pode trafegar ou residir nesse ambiente.
 
-Siga os passos:
+Siga os passos para provisionamento:
 
 1. Acesse o painel oficial do Supabase: [https://supabase.com/dashboard](https://supabase.com/dashboard) e faça login.
 2. Clique no botão verde **"New Project"**.
 3. Selecione a sua organização (Organization).
-4. Crie o projeto de **Desenvolvimento / Homologação**:
+4. Para o projeto de **Desenvolvimento / Homologação**:
    - **Name:** `protege-adv-dev`
    - **Database Password:** Escolha uma senha forte e guarde-a com segurança em seu gerenciador de senhas.
-   - **Region:** Selecione **`South America (São Paulo) - sa-east-1`** (Obrigatório).
+   - **Region:** `East US (North Virginia) - us-east-1` (ou `sa-east-1`).
    - **Pricing Plan:** Free ou Pro conforme seu plano.
    - Clique em **"Create new project"** e aguarde 1 a 2 minutos até o provisionamento concluir.
-5. Repita o processo para criar o projeto de **Produção**:
+5. Para o projeto de **Produção**:
    - **Name:** `protege-adv-prod`
    - **Database Password:** Escolha outra senha segura.
-   - **Region:** Selecione **`South America (São Paulo) - sa-east-1`** (Obrigatório).
+   - **Region:** Selecione OBRIGATORIAMENTE **`South America (São Paulo) - sa-east-1`** (Obrigatório por PRD 19).
    - Clique em **"Create new project"**.
 6. Em cada projeto criado, anote o **Reference ID** (o código alfanumérico que aparece na URL do painel, ex: `abcdefghijklmnopqrst`).
 
