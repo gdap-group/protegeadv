@@ -251,7 +251,7 @@ export default function DesignPage() {
               2. Button — Variantes e Estados
             </h2>
             <p className="text-sm text-[var(--color-muted)]">
-              Texto branco sobre fundo roxo utiliza primary-hover (5,7:1) como base. Hover aciona gradiente de destaque e brilho roxo (glow).
+              Texto branco sobre fundo roxo utiliza primary-hover (5,7:1) como base. O estado hover mantém o fundo primary-hover e adiciona brilho roxo (glow), preservando o contraste de 5,7:1.
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-6 rounded-[var(--radius-card)] bg-[var(--color-surface)] border border-[var(--color-border)]">
@@ -259,7 +259,7 @@ export default function DesignPage() {
                 <span className="text-xs uppercase font-semibold text-[var(--color-glow)]">Primary (Base primary-hover)</span>
                 <div className="space-y-2">
                   <Button variant="primary" className="w-full">Normal</Button>
-                  <Button variant="primary" className="w-full hover:brightness-110">Hover Visual</Button>
+                  <Button variant="primary" className="w-full hover:shadow-[var(--shadow-glow)]">Hover Visual</Button>
                   <Button variant="primary" disabled className="w-full">Desabilitado</Button>
                   <Button variant="primary" loading className="w-full">Carregando</Button>
                 </div>

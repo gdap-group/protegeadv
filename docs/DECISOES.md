@@ -15,6 +15,7 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Região de Ambientes e Teste de Isolamento Remoto (ADR 012):** Projeto dev (`dvqrlgoqfsxrcjkfytfj`) em `us-east-1` tolerado exclusivamente para testes e homologação com dados sintéticos, mantendo a obrigatoriedade estrita de `sa-east-1` (São Paulo) para produção conforme PRD 19. Validação de isolamento executada contra o banco real via `pnpm test:db:remoto`.
 - **Tema Canônico e Governança de Cores (ADR 013):** Centralização de 100% dos tokens de cores em `apps/web/src/theme.css` com 13 cores exatas, fontes locais `@fontsource` (Inter e JetBrains Mono), rota de homologação `/_design` (DEV only) e teste automatizado bloqueante contra cores hex/rgb literais fora do tema.
 - **Componentes Base e Acessibilidade WAI-ARIA (ADR 014):** Biblioteca de 17 componentes em `apps/web/src/components/ui` com Radix UI, TanStack Table e shadcn/ui. Contraste mínimo de 4,5:1 (Button primary com fundo `#7C3AED` a 5,7:1, links em cards com `#A78BFA`), badges multimodais com ícone e texto, e 100% de cobertura com vitest-axe.
+- **Casca do Sistema, Menu e Busca Global (ADR 015):** Layout principal com Sidebar colapsável e persistida em localStorage, gaveta Sheet para mobile (< 768px), paleta de comandos via `cmdk` (Ctrl+K), PermissoesProvider alinhado ao enum `modulo_sistema`, correção de contraste do Button primary no hover (fundo `#7C3AED` + glow a 5,7:1) e páginas-esqueleto sem dados falsos.
 
 ---
 
@@ -162,6 +163,24 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
   3. `DataTable` construída sobre `@tanstack/react-table` (v8) com ordenação dinâmica por coluna, paginação e seleção de linhas com checkboxes acessíveis, respeitando a altura de 44px por linha (`.table-row-standard`).
   4. Suíte automatizada de testes com `vitest-axe` cobrindo renderização, atributos ARIA, ausência de violações de acessibilidade e navegação por teclado (`Tab`, `Enter`, `Espaço` e `Esc` em diálogos, painéis laterais e menus dropdown).
 - **Motivo:** Fornece os blocos de construção essenciais com conformidade WCAG AA estrita e experiência de usuário de nível startup antes do desenvolvimento das interfaces de processos e publicações.
+
+---
+
+## ADR 015: Arquitetura da Casca do Sistema, Navegação e Busca Global (Passo 3.3)
+- **Status:** Aceito
+- **Contexto:**
+  1. A navegação do sistema precisa suportar os módulos do PRD Seção 2, oferecendo acesso rápido tanto em telas grandes quanto em dispositivos móveis, sem vazamento de módulos não autorizados.
+  2. No Passo 3.2, o estado hover do `Button primary` usava gradiente de destaque, o que reduzia ligeiramente o contraste do texto branco.
+  3. A aplicação precisa de um mecanismo de busca global por teclado (`Ctrl+K`/`Cmd+K`) para navegação instantânea entre módulos operacionais.
+- **Decisão:**
+  1. **Correção de Contraste no Button Primary:** O estado hover mantém rigorosamente o fundo `primary-hover` (`#7C3AED`), acrescentando apenas a sombra de brilho roxo (`shadow-[var(--shadow-glow)]`), garantindo que o texto branco/claro mantenha a taxa de **5,7:1** tanto no estado normal quanto no hover.
+  2. **Casca do Sistema (`MainLayout`):** Estrutura envolvente com `Sidebar` desktop recolhível, `Header` com busca e notificações, e área de conteúdo flexível. A rota inicial `/` redireciona automaticamente para `/processos`, e a rota `/_design` permanece isolada fora da casca e restrita a `import.meta.env.DEV`.
+  3. **Persistência de Estado do Menu:** O estado recolhido/expandido do menu lateral é persistido em `localStorage` sob a chave `protege_sidebar_collapsed` com tratamento defensivo de erro (`try/catch`) para navegação anônima/privada.
+  4. **Camada de Permissões desacoplada (`PermissoesProvider`):** Hook `useModulosPermitidos()` consome módulos baseados no enum `modulo_sistema` do banco de dados PostgreSQL. Oculta da navegação e da paleta de comandos itens que o usuário não pode acessar, mantendo nota explícita de que a segurança real de dados é provida pelas políticas de RLS.
+  5. **Busca Global (`CommandPalette`):** Implementada com a biblioteca acessível `cmdk`, ativada por `Ctrl+K` e `Cmd+K`, filtrada pelos módulos permitidos e fechada com `Escape`.
+  6. **Avisos e Usuário:** Sino na barra superior abre gaveta com `EmptyState` ("Nenhum aviso por enquanto"), e menu do usuário exibe rótulo estático "Minha conta" com itens desabilitados (sem dados falsos), a serem ligados à autenticação do Passo 2.4.
+  7. **Responsividade Mobile:** Em telas < 768px, a barra lateral oculta-se e um botão na barra superior aciona a gaveta lateral (`Sheet side="left"`).
+- **Motivo:** Estabelece a infraestrutura ergonômica, consistente e acessível da aplicação antes da integração dos dados de processos e publicações.
 
 
 

@@ -1,46 +1,49 @@
 import React, { Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { PermissoesProvider } from './contexts/PermissoesContext';
+import { MainLayout } from './components/layout/MainLayout';
+import ProcessosPage from './pages/ProcessosPage';
+import PublicacoesPage from './pages/PublicacoesPage';
+import AgendaPage from './pages/AgendaPage';
+import PessoasPage from './pages/PessoasPage';
+import GedPage from './pages/GedPage';
+import ContratosPage from './pages/ContratosPage';
+import EmpresaPage from './pages/EmpresaPage';
+import ConfiguracoesPage from './pages/ConfiguracoesPage';
 
 const DesignPage = import.meta.env.DEV
   ? React.lazy(() => import('./pages/DesignPage'))
   : null;
 
-function Home() {
-  return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex items-center justify-center p-4">
-      <div className="text-center p-8 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-surface)] glow-card max-w-md w-full">
-        <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-text)]">
-          Protege ADV &amp; Protege Empresa
-        </h1>
-        <p className="text-sm text-[var(--color-muted)] mt-2">
-          Ambiente configurado com pnpm workspaces e tema canônico dark.
-        </p>
-        {import.meta.env.DEV && (
-          <div className="mt-6">
-            <Link
-              to="/_design"
-              className="inline-block py-2 px-4 rounded-[var(--radius-input)] text-xs font-mono font-medium text-[var(--color-text)] bg-gradient-to-r from-[var(--color-gradient-from)] to-[var(--color-gradient-to)] transition-all duration-150 hover:brightness-110"
-            >
-              Abrir Teste de Cores (/_design)
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   return (
-    <BrowserRouter>
-      <Suspense fallback={<div className="min-h-screen bg-[var(--color-bg)]" />}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          {import.meta.env.DEV && DesignPage && (
-            <Route path="/_design" element={<DesignPage />} />
-          )}
-        </Routes>
-      </Suspense>
-    </BrowserRouter>
+    <PermissoesProvider>
+      <BrowserRouter>
+        <Suspense fallback={<div className="min-h-screen bg-[var(--color-bg)]" />}>
+          <Routes>
+            {/* Rota de Design System (fora da casca e estritamente em desenvolvimento) */}
+            {import.meta.env.DEV && DesignPage && (
+              <Route path="/_design" element={<DesignPage />} />
+            )}
+
+            {/* Casca do sistema envolvendo as páginas operacionais */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Navigate to="/processos" replace />} />
+              <Route path="/processos" element={<ProcessosPage />} />
+              <Route path="/publicacoes" element={<PublicacoesPage />} />
+              <Route path="/agenda" element={<AgendaPage />} />
+              <Route path="/pessoas" element={<PessoasPage />} />
+              <Route path="/ged" element={<GedPage />} />
+              <Route path="/contratos" element={<ContratosPage />} />
+              <Route path="/empresa" element={<EmpresaPage />} />
+              <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+            </Route>
+
+            {/* Rota padrão para caminhos inexistentes */}
+            <Route path="*" element={<Navigate to="/processos" replace />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </PermissoesProvider>
   );
 }

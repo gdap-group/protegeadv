@@ -4,6 +4,46 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
 
 ---
 
+## [2026-11-05] Passo 3.3 Concluído: Casca do Sistema, Menu Lateral, Busca Global e Páginas-Esqueleto (Fase 3)
+
+### O que foi feito:
+- [x] **Correção de Contraste no Button Primary:**
+  - Ajustado o estado hover em [apps/web/src/components/ui/button.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/ui/button.tsx): fundo base fixado em `primary-hover` (`#7C3AED`) com acréscimo exclusivo de brilho (`shadow-[var(--shadow-glow)]`), mantendo o contraste de **5,7:1** com texto branco.
+  - Rota `/_design` e testes atualizados com sucesso.
+- [x] **Arquitetura de Rotas e Casca do Sistema (`MainLayout`):**
+  - Implementado [apps/web/src/components/layout/MainLayout.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/layout/MainLayout.tsx) envolvendo as rotas operacionais do sistema.
+  - Rota raiz `/` configurada para redirecionar automaticamente para `/processos`.
+  - A rota `/_design` permanece isolada fora da casca e carregada dinamicamente via `React.lazy` apenas sob `import.meta.env.DEV`, confirmada como ausente no bundle de produção.
+- [x] **Menu Lateral Recolhível com Persistência:**
+  - Implementado [apps/web/src/components/layout/Sidebar.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/layout/Sidebar.tsx) com os 8 módulos do PRD Seção 2: `Processos`, `Publicações`, `Agenda`, `Pessoas`, `GED (Arquivos)`, `Contratos`, `Protege Empresa` e `Configurações`.
+  - Cada item mapeado com o campo `modulo` alinhado estritamente ao enum `modulo_sistema` do banco de dados PostgreSQL.
+  - Estado colapsado/expandido lembrado em `localStorage` sob a chave `protege_sidebar_collapsed` com tratamento de erro (`try/catch`).
+  - Item ativo destacado em roxo com ícone, texto e borda indicadora.
+- [x] **Provedor e Hook de Permissões (`PermissoesProvider`):**
+  - Criado [apps/web/src/contexts/PermissoesContext.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/contexts/PermissoesContext.tsx) com o hook `useModulosPermitidos()`.
+  - Provider padrão libera todos os módulos (com comentário `TODO` documentando que a integração real será com o login e RLS no Passo 2.4).
+  - Módulos sem permissão são omitidos automaticamente tanto do menu lateral quanto da paleta de busca global.
+- [x] **Barra Superior (`Header`) e Paleta de Comandos (`cmdk`):**
+  - Implementada busca global via [apps/web/src/components/layout/CommandPalette.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/layout/CommandPalette.tsx) utilizando a biblioteca `cmdk`, acionada por `Ctrl+K` e `Cmd+K` e fechada com `Escape`.
+  - Sino de avisos abrindo painel lateral (`Sheet`) com o componente `EmptyState`: "Nenhum aviso por enquanto".
+  - Menu do usuário com rótulo estático "Minha conta" e opções Perfil/Sair desabilitadas (sem nomes fictícios).
+- [x] **Componente `PageHeader`:**
+  - Criado [apps/web/src/components/layout/PageHeader.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/layout/PageHeader.tsx) contendo título da página, descrição, breadcrumbs clicáveis e área para botão de ação primária.
+- [x] **Responsividade Mobile:**
+  - Telas menores que 768px ocultam a barra lateral e exibem botão na barra superior que abre o menu como gaveta lateral (`Sheet side="left"`).
+- [x] **Páginas-Esqueleto dos 8 Módulos (sem dados falsos):**
+  - Criadas em `apps/web/src/pages/`: `ProcessosPage.tsx`, `PublicacoesPage.tsx`, `AgendaPage.tsx`, `PessoasPage.tsx`, `GedPage.tsx`, `ContratosPage.tsx`, `EmpresaPage.tsx` e `ConfiguracoesPage.tsx`. Todas padronizadas com `PageHeader` e `EmptyState` em português correto.
+- [x] **Testes Automatizados (5 novos testes em `layout.test.tsx`):**
+  - (a) Provider com módulos restritos oculta os itens não autorizados no menu;
+  - (b) `Ctrl+K` abre a paleta de comandos e `Esc` fecha;
+  - (c) Navegação pelo menu altera as rotas e renderiza as páginas-esqueleto;
+  - (d) Botão mobile na barra superior aciona a gaveta lateral (`Sheet`);
+  - (e) Validação de acessibilidade sem violações (`vitest-axe`) na casca do sistema.
+  - Governança de cores mantida: zero cores literais hex/rgb fora de `theme.css`.
+
+
+---
+
 ## [2026-11-05] Passo 3.2 Concluído: Componentes Base e Rota de Design Estendida (Fase 3)
 
 ### O que foi feito:
