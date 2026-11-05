@@ -352,10 +352,28 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
 - [x] Regeração dos tipos TypeScript via `pnpm db:types` (`packages/shared/src/database.types.ts`).
 - [x] Atualização dos documentos `docs/BANCO.md`, `docs/DECISOES.md` (ADRs 007, 008 e 009) e `docs/PROGRESSO.md`.
 
+## [2026-11-05] Conclusão do Passo 3.4: Modelos Reutilizáveis de Página (Patterns)
+
+### O que foi feito:
+- [x] Criação do mapa de erros amigáveis do Zod em português:
+  - `packages/shared/src/zod-pt.ts` e exportação unificada em `packages/shared/src/index.ts`.
+  - Reexportação e ativação automática em `apps/web/src/lib/zod-pt.ts`.
+- [x] Criação dos três modelos arquiteturais em `apps/web/src/components/patterns/`:
+  - `PaginaLista.tsx`: cabeçalho com ação primária, barra de filtros unificada (busca textual + pills rápidos com contagem), `DataTable` integrada e quatro estados de interface (normal, carregando com `Skeleton`, vazio com `EmptyState` em nível `h2` e erro com alerta e botão "Tentar de novo").
+  - `PaginaDetalhe.tsx`: cabeçalho com título, subtítulo com identificador numérico em fonte mono (`font-mono` para CNJ), status `Badge` (ícone + texto), abas navegáveis (`Tabs`) e card lateral de metadados rápidos com layout responsivo (empilha abaixo do conteúdo principal em telas móveis < 768px).
+  - `FormularioEmPainel.tsx`: gaveta lateral (`Sheet`) integrando `react-hook-form` e `@hookform/resolvers/zod`, validação reativa no blur e ao digitar, foco automático no primeiro campo inválido, botão de salvar com estado de loading e diálogo modal de confirmação de descarte de alterações caso o usuário tente fechar com o formulário sujo (`isDirty`).
+- [x] Atualização da rota `/_design` (`apps/web/src/pages/DesignPage.tsx`):
+  - Adição da Seção 9 com controles interativos para alternar estados da `PaginaLista`, expandir a pré-visualização da `PaginaDetalhe` e testar o `FormularioEmPainel` com validação e alerta de descarte.
+  - Dados ilustrativos mantidos estritamente restritos à rota `/_design` e aos arquivos de teste (zero dados falsos em componentes de produção).
+- [x] Testes automatizados rigorosos em `apps/web/src/components/patterns/patterns.test.tsx`:
+  - 12 novos testes cobrindo todos os componentes, estados, acessibilidade de teclado (`Tab`, `Enter`, `Esc`) e validação de regras de negócio.
+  - Varredura de acessibilidade com `vitest-axe` sem nenhuma violação.
+  - Governança visual mantida com 100% de sucesso (zero literais hexadecimais ou rgb fora de `theme.css`).
+  - Total de 62 testes automatizados passando no monorepo (56 em `apps/web`).
+- [x] Documentação atualizada em `docs/DECISOES.md` (ADR 016) e `docs/PROGRESSO.md`.
+
 ### Próximos passos:
-- [ ] Aplicar as migrations `0002` até `0009` e o `seed.sql` no SQL Editor do Supabase Dashboard (projeto remoto).
-- [ ] Implementar casca de navegação do front-end (`apps/web`) seguindo `docs/DESIGN.md` (tema escuro com roxo, sem gráficos).
-- [ ] Implementar Caixa de Entrada de Publicações (Módulo 7 do PRD).
+- [ ] Implementar a Caixa de Entrada de Publicações do DJEN (Módulo 7 do PRD / Fase 4).
 
 
 

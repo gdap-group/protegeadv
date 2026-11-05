@@ -71,3 +71,4 @@ export const EntidadeMultiTenantSchema = z.object({
 export type EntidadeMultiTenant = z.infer<typeof EntidadeMultiTenantSchema>;
 
 export * from "./database.types.js";
+export * from "./zod-pt.js";

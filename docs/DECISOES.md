@@ -182,5 +182,35 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
   7. **Responsividade Mobile:** Em telas < 768px, a barra lateral oculta-se e um botão na barra superior aciona a gaveta lateral (`Sheet side="left"`).
 - **Motivo:** Estabelece a infraestrutura ergonômica, consistente e acessível da aplicação antes da integração dos dados de processos e publicações.
 
+---
+
+## ADR 016: Modelos Reutilizáveis de Página — Lista, Detalhe e Formulário em Painel (Passo 3.4)
+- **Status:** Aceito
+- **Contexto:**
+  1. A implementação dos módulos de negócio (Processos, Publicações, Pessoas, Contratos, etc.) requer templates de interface padronizados para garantir coerência visual, ergonomia operacional e economia de código.
+  2. Formulários precisam de validação em tempo real com mensagens amigáveis em português, sem vazamento de jargões técnicos em inglês do Zod.
+  3. Usuários precisam ser prevenidos contra perda acidental de dados preenchidos ao fechar gavetas laterais de formulário.
+  4. Páginas de listagem e detalhe precisam tratar todos os estados assíncronos (carregamento com Skeleton, listas vazias, erros com retry) e adaptar-se com elegância entre desktop e telas móveis.
+- **Decisão:**
+  1. **Modelo `PaginaLista` (`apps/web/src/components/patterns/PaginaLista.tsx`):**
+     - Estrutura combinando `PageHeader`, ação principal configurável, barra de filtros unificada (busca textual com ícone de lupa e pills de filtros rápidos com badges numéricos de contagem).
+     - Integração nativa com `DataTable` (ordenação, paginação, seleção por checkbox).
+     - Tratamento completo dos quatro estados: normal, carregando (placeholder estruturado com `Skeleton`), vazio (`EmptyState` acessível com ação primária) e erro (banner com alerta visual, texto explicativo em português e botão "Tentar de novo").
+  2. **Modelo `PaginaDetalhe` (`apps/web/src/components/patterns/PaginaDetalhe.tsx`):**
+     - Cabeçalho de identificação com título da demanda, subtítulo com identificador numérico em fonte mono (`font-mono` para números CNJ), badge de situação com redundância de ícone e texto, breadcrumbs e botões de ação.
+     - Navegação por abas (`Tabs`) com suporte a contadores de registros e ícones em cada aba.
+     - Card lateral de dados rápidos com pares rótulo/valor e rodapé de ações, com layout responsivo que empilha automaticamente abaixo do conteúdo principal em visualizações móveis (`< 768px`).
+  3. **Modelo `FormularioEmPainel` (`apps/web/src/components/patterns/FormularioEmPainel.tsx`):**
+     - Gaveta lateral (`Sheet side="right"`) combinando `react-hook-form` e `@hookform/resolvers/zod`.
+     - Validação reativa (`mode: 'onBlur', reValidateMode: 'onChange'`), botão "Salvar" com estado visual de processamento (`loading={isSubmitting}`), botão "Cancelar" e foco automático no primeiro elemento inválido na tentativa de submissão.
+     - Prevenção de perda de dados: intercepta tentativas de fechamento (clique no botão Cancelar, clique fora no overlay ou tecla `Esc`) quando o formulário possui alterações (`isDirty`), disparando modal de confirmação ("Descartar alterações?") antes de fechar.
+  4. **Mapa de Mensagens Zod em Português (`zod-pt.ts`):**
+     - Módulo configurado em `packages/shared/src/zod-pt.ts` e exportado para `apps/web/src/lib/zod-pt.ts`, traduzindo automaticamente validações de tipo, campos vazios/obrigatórios, formatos de e-mail e limites numéricos/textuais para o português do Brasil.
+  5. **Demonstração e Governança:**
+     - Demonstração interativa dos três modelos adicionada na Seção 9 de `apps/web/src/pages/DesignPage.tsx`, com dados ilustrativos restritos à rota `/_design` e aos testes.
+     - Suíte de testes com Vitest, Testing Library e `vitest-axe` comprovando ausência de violações de acessibilidade (`axe`), conformidade estrita de contraste, ordem de cabeçalhos (`h1 -> h2`) e navegação completa por teclado (`Tab`, `Enter`, `Esc`).
+     - Teste de governança de cores (`theme.test.ts`) mantido com 100% de sucesso (zero valores literais hexadecimais ou rgb fora de `theme.css`).
+- **Motivo:** Acelera a entrega dos passos seguintes com componentes de alto nível consistentes, acessíveis e à prova de regressão.
+
 
 

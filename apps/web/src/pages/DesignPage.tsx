@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { z } from 'zod';
 import {
   Button,
   Input,
@@ -51,12 +52,25 @@ import {
   DataTable,
 } from '../components/ui';
 import {
+  PaginaLista,
+  PaginaDetalhe,
+  FormularioEmPainel,
+  FormFieldItem,
+  FormFieldLabel,
+  FormFieldErrorMessage,
+} from '../components/patterns';
+import {
   FileText,
   HelpCircle,
   MoreVertical,
   Plus,
   RefreshCw,
   SlidersHorizontal,
+  CheckCircle2,
+  Clock,
+  FileCheck,
+  History,
+  FolderOpen,
 } from 'lucide-react';
 
 interface ColorToken {
@@ -142,10 +156,26 @@ function ToastDemoButtons() {
   );
 }
 
+const demoFormSchema = z.object({
+  titulo: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
+  emailNotificacao: z.string().email('E-mail de notificação inválido'),
+  numeroCnj: z.string().min(1, 'Número do processo é obrigatório'),
+  observacoes: z.string().optional(),
+});
+type DemoFormValues = z.infer<typeof demoFormSchema>;
+
 export default function DesignPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+
+  // Estados dos Patterns (Passo 3.4)
+  const [listaState, setListaState] = useState<'normal' | 'loading' | 'empty' | 'error'>('normal');
+  const [listaQuickFilter, setListaQuickFilter] = useState('todos');
+  const [listaSearch, setListaSearch] = useState('');
+  const [formPainelOpen, setFormPainelOpen] = useState(false);
+  const [showDetailPreview, setShowDetailPreview] = useState(false);
+  const [submittedData, setSubmittedData] = useState<DemoFormValues | null>(null);
 
   useEffect(() => {
     const computed = getComputedStyle(document.documentElement);
@@ -624,6 +654,334 @@ export default function DesignPage() {
               Tabela construída com TanStack Table, ordenação ao clicar no cabeçalho, paginação integrada e seleção de linhas.
             </p>
             <DataTable columns={tableColumns} data={tableSampleData} pageSize={3} />
+          </section>
+
+          {/* 9. Modelos de Página (Patterns — Passo 3.4) */}
+          <section className="space-y-8 border-t-2 border-[var(--color-primary)]/40 pt-8">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 text-xs font-semibold rounded-[var(--radius-input)] bg-[var(--color-primary-hover)] text-[var(--color-text)]">
+                  Passo 3.4
+                </span>
+                <h2 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">
+                  9. Modelos de Página Reutilizáveis (Patterns)
+                </h2>
+              </div>
+              <p className="text-sm text-[var(--color-muted)] mt-1">
+                Demonstração interativa dos 3 modelos canônicos: PaginaLista, PaginaDetalhe e FormularioEmPainel.
+              </p>
+            </div>
+
+            {/* 9.1 PaginaLista Interativa */}
+            <div className="space-y-4 p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)]">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                    9.1 PaginaLista — Alternar Estados do Modelo
+                  </h3>
+                  <p className="text-xs text-[var(--color-muted)]">
+                    Teste visual dos estados normal, carregando (Skeleton), vazio e erro com ação de tentar novamente.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-medium text-[var(--color-muted)]">Estado:</span>
+                  <div className="flex gap-1 bg-[var(--color-bg)] p-1 rounded-[var(--radius-input)] border border-[var(--color-border)]">
+                    {(['normal', 'loading', 'empty', 'error'] as const).map((st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => setListaState(st)}
+                        className={`px-2.5 py-1 text-xs rounded-[var(--radius-input)] font-medium transition-colors cursor-pointer ${
+                          listaState === st
+                            ? 'bg-[var(--color-primary-hover)] text-[var(--color-text)]'
+                            : 'text-[var(--color-muted)] hover:text-[var(--color-text)]'
+                        }`}
+                      >
+                        {st === 'normal' && 'Normal'}
+                        {st === 'loading' && 'Carregando'}
+                        {st === 'empty' && 'Vazio'}
+                        {st === 'error' && 'Erro'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <PaginaLista
+                title="Gestão de Processos Judiciais"
+                description="Listagem completa com busca textual, filtros rápidos por status e ações integradas."
+                breadcrumbs={[{ label: 'Início', href: '/processos' }, { label: 'Processos' }]}
+                primaryAction={{
+                  label: 'Novo Processo',
+                  icon: <Plus className="h-4 w-4" />,
+                  onClick: () => setFormPainelOpen(true),
+                }}
+                searchValue={listaSearch}
+                onSearchChange={setListaSearch}
+                searchPlaceholder="Buscar por CNJ, cliente ou vara..."
+                quickFilters={[
+                  { id: 'todos', label: 'Todos', count: 42 },
+                  { id: 'ativos', label: 'Ativos', count: 35 },
+                  { id: 'suspensos', label: 'Suspensos', count: 7 },
+                ]}
+                activeQuickFilter={listaQuickFilter}
+                onQuickFilterChange={setListaQuickFilter}
+                columns={tableColumns}
+                data={listaState === 'empty' ? [] : tableSampleData}
+                isLoading={listaState === 'loading'}
+                isError={listaState === 'error'}
+                errorMessage="Instabilidade temporária ao consultar os autos no tribunal. Tente novamente."
+                onRetry={() => setListaState('normal')}
+                pageSize={3}
+                emptyTitle="Nenhum processo encontrado"
+                emptyDescription="Não há processos com os filtros atuais. Clique em 'Novo Processo' para cadastrar."
+                emptyAction={{
+                  label: 'Cadastrar Processo',
+                  onClick: () => setFormPainelOpen(true),
+                }}
+              />
+            </div>
+
+            {/* 9.2 PaginaDetalhe Interativa */}
+            <div className="space-y-4 p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)]">
+              <div className="flex items-center justify-between pb-4 border-b border-[var(--color-border)]">
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                    9.2 PaginaDetalhe — Identificação, Abas e Card Lateral Responsivo
+                  </h3>
+                  <p className="text-xs text-[var(--color-muted)]">
+                    Cabeçalho com CNJ em fonte mono, badge com ícone, abas e card lateral de metadados rápidos (empilha no mobile &lt; 768px).
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowDetailPreview(!showDetailPreview)}
+                >
+                  {showDetailPreview ? 'Ocultar Detalhes' : 'Expandir Pré-visualização'}
+                </Button>
+              </div>
+
+              {showDetailPreview && (
+                <div className="p-4 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-[var(--radius-card)]">
+                  <PaginaDetalhe
+                    title="Ação Declaratória de Inexistência de Débito c/c Danos Morais"
+                    codigoMono="0001234-56.2024.8.13.0024"
+                    breadcrumbs={[
+                      { label: 'Processos', href: '/processos' },
+                      { label: '0001234-56.2024.8.13.0024' },
+                    ]}
+                    status={{
+                      label: 'Em Monitoramento Ativo',
+                      variant: 'success',
+                      icon: CheckCircle2,
+                    }}
+                    actions={
+                      <div className="flex items-center gap-2">
+                        <Button variant="secondary" size="sm" onClick={() => setFormPainelOpen(true)}>
+                          Editar Autos
+                        </Button>
+                        <Button variant="primary" size="sm">
+                          Sincronizar Tribunal
+                        </Button>
+                      </div>
+                    }
+                    tabs={[
+                      {
+                        id: 'resumo',
+                        label: 'Resumo',
+                        icon: FileCheck,
+                        content: (
+                          <div className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] space-y-3">
+                            <h4 className="font-semibold text-sm text-[var(--color-text)]">
+                              Síntese da Demanda
+                            </h4>
+                            <p className="text-sm text-[var(--color-muted)] leading-relaxed">
+                              Demanda ajuizada questionando negativação indevida nos órgãos de proteção ao crédito decorrente de contrato bancário fraudulento. Foi deferido o pedido liminar para exclusão imediata do apontamento restritivo.
+                            </p>
+                          </div>
+                        ),
+                      },
+                      {
+                        id: 'andamentos',
+                        label: 'Andamentos',
+                        count: 14,
+                        icon: History,
+                        content: (
+                          <div className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)] space-y-3">
+                            <h4 className="font-semibold text-sm text-[var(--color-text)]">
+                              Histórico de Movimentações Processuais
+                            </h4>
+                            <div className="space-y-2 font-mono text-xs text-[var(--color-muted)]">
+                              <div className="p-2 bg-[var(--color-bg)] rounded-[var(--radius-input)] border border-[var(--color-border)]">
+                                [10/05/2026] Juntada de petição de contestação pelo réu.
+                              </div>
+                              <div className="p-2 bg-[var(--color-bg)] rounded-[var(--radius-input)] border border-[var(--color-border)]">
+                                [02/05/2026] Concedida tutela antecipada em favor do autor.
+                              </div>
+                            </div>
+                          </div>
+                        ),
+                      },
+                      {
+                        id: 'publicacoes',
+                        label: 'Publicações',
+                        count: 3,
+                        icon: Clock,
+                        content: (
+                          <div className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)]">
+                            <p className="text-sm text-[var(--color-muted)]">
+                              3 publicações capturadas no DJEN vinculadas aos advogados habilitados.
+                            </p>
+                          </div>
+                        ),
+                      },
+                      {
+                        id: 'documentos',
+                        label: 'Documentos',
+                        count: 8,
+                        icon: FolderOpen,
+                        content: (
+                          <div className="p-4 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)]">
+                            <p className="text-sm text-[var(--color-muted)]">
+                              8 peças processuais e anexos arquivados no GED.
+                            </p>
+                          </div>
+                        ),
+                      },
+                    ]}
+                    sideTitle="Metadados do Processo"
+                    sideItems={[
+                      { label: 'Cliente', value: 'Indústria Metalúrgica Horizonte Ltda' },
+                      { label: 'Advogado Responsável', value: 'Dra. Camila Nogueira (OAB/MG 98.765)' },
+                      { label: 'Tribunal / Órgão', value: 'TJMG — 2ª Vara Cível de BH' },
+                      { label: 'Valor da Causa', value: 'R$ 145.800,00' },
+                      { label: 'Última Leitura', value: 'Hoje às 08:30 (Em dia)' },
+                    ]}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 9.3 FormularioEmPainel Interativo */}
+            <div className="space-y-4 p-6 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-[var(--radius-card)]">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--color-text)]">
+                    9.3 FormularioEmPainel — Validação Zod, Tempo Real e Alerta de Descarte
+                  </h3>
+                  <p className="text-xs text-[var(--color-muted)]">
+                    Painel lateral com validação em tempo real (no blur e ao digitar), mensagens em português, foco automático no erro e confirmação de descarte se houver alterações não salvas.
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={() => setFormPainelOpen(true)}
+                >
+                  Abrir Formulário no Painel
+                </Button>
+              </div>
+
+              {submittedData && (
+                <div className="p-4 bg-[var(--color-bg)] border border-[var(--color-success)]/40 rounded-[var(--radius-card)] text-xs font-mono space-y-1">
+                  <span className="text-[var(--color-success)] font-semibold block">
+                    ✓ Último envio salvo com sucesso:
+                  </span>
+                  <pre className="text-[var(--color-text)] overflow-x-auto">
+                    {JSON.stringify(submittedData, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              {/* Instância do FormularioEmPainel */}
+              <FormularioEmPainel<DemoFormValues>
+                open={formPainelOpen}
+                onOpenChange={setFormPainelOpen}
+                title="Novo Processo Judicial"
+                description="Preencha os metadados principais dos autos para cadastro no monitoramento."
+                schema={demoFormSchema}
+                defaultValues={{
+                  titulo: '',
+                  emailNotificacao: '',
+                  numeroCnj: '',
+                  observacoes: '',
+                }}
+                submitLabel="Cadastrar Processo"
+                cancelLabel="Descartar e Fechar"
+                onSubmit={async (data) => {
+                  await new Promise((r) => setTimeout(r, 600));
+                  setSubmittedData(data);
+                }}
+              >
+                {(form) => (
+                  <div className="space-y-4">
+                    {/* Campo: Título */}
+                    <FormFieldItem>
+                      <FormFieldLabel htmlFor="input-titulo" required>
+                        Título ou Descrição do Caso
+                      </FormFieldLabel>
+                      <Input
+                        id="input-titulo"
+                        placeholder="Ex: Ação Cobrança vs Banco"
+                        {...form.register('titulo')}
+                        aria-invalid={!!form.formState.errors.titulo}
+                      />
+                      <FormFieldErrorMessage>
+                        {form.formState.errors.titulo?.message}
+                      </FormFieldErrorMessage>
+                    </FormFieldItem>
+
+                    {/* Campo: CNJ */}
+                    <FormFieldItem>
+                      <FormFieldLabel htmlFor="input-cnj" required>
+                        Número do Processo (CNJ)
+                      </FormFieldLabel>
+                      <Input
+                        id="input-cnj"
+                        placeholder="0000000-00.0000.0.00.0000"
+                        className="font-mono"
+                        {...form.register('numeroCnj')}
+                        aria-invalid={!!form.formState.errors.numeroCnj}
+                      />
+                      <FormFieldErrorMessage>
+                        {form.formState.errors.numeroCnj?.message}
+                      </FormFieldErrorMessage>
+                    </FormFieldItem>
+
+                    {/* Campo: E-mail */}
+                    <FormFieldItem>
+                      <FormFieldLabel htmlFor="input-email" required>
+                        E-mail de Notificação de Prazos
+                      </FormFieldLabel>
+                      <Input
+                        id="input-email"
+                        type="email"
+                        placeholder="advogado@escritorio.adv.br"
+                        {...form.register('emailNotificacao')}
+                        aria-invalid={!!form.formState.errors.emailNotificacao}
+                      />
+                      <FormFieldErrorMessage>
+                        {form.formState.errors.emailNotificacao?.message}
+                      </FormFieldErrorMessage>
+                    </FormFieldItem>
+
+                    {/* Campo: Observações */}
+                    <FormFieldItem>
+                      <FormFieldLabel htmlFor="textarea-obs">
+                        Observações e Estratégia Inicial
+                      </FormFieldLabel>
+                      <Textarea
+                        id="textarea-obs"
+                        rows={3}
+                        placeholder="Orientações preliminares ou anotações da equipe..."
+                        {...form.register('observacoes')}
+                      />
+                    </FormFieldItem>
+                  </div>
+                )}
+              </FormularioEmPainel>
+            </div>
           </section>
         </div>
       </TooltipProvider>

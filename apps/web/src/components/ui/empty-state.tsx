@@ -7,6 +7,7 @@ export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  headingLevel?: 'h2' | 'h3';
 }
 
 export function EmptyState({
@@ -14,9 +15,12 @@ export function EmptyState({
   title,
   description,
   action,
+  headingLevel = 'h3',
   className,
   ...props
 }: EmptyStateProps) {
+  const HeadingTag = headingLevel;
+
   return (
     <div
       className={cn(
@@ -28,7 +32,7 @@ export function EmptyState({
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-elevated)] border border-[var(--color-border)] text-[var(--color-glow)] mb-4">
         {icon ?? <Inbox className="h-6 w-6" aria-hidden="true" />}
       </div>
-      <h3 className="text-base font-semibold text-[var(--color-text)]">{title}</h3>
+      <HeadingTag className="text-base font-semibold text-[var(--color-text)]">{title}</HeadingTag>
       {description && (
         <p className="text-sm text-[var(--color-muted)] max-w-sm mt-1.5 mb-5 leading-relaxed">
           {description}
