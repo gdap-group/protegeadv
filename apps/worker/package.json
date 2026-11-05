@@ -1,0 +1,23 @@
+{
+  "name": "@protege/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@protege/shared": "workspace:*",
+    "@protege/sources": "workspace:*",
+    "@supabase/supabase-js": "^2.118.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "tsx": "^4.19.3",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.5"
+  }
+}

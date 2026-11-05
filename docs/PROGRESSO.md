@@ -1,0 +1,168 @@
+# Progresso do Projeto — Protege ADV & Protege Empresa
+
+Este documento registra o histórico de tarefas executadas, decisões tomadas e os próximos passos do projeto.
+
+---
+
+## [2026-10-16] Automação de CI com GitHub Actions e Governança de Decisões
+
+### O que foi feito:
+- [x] Criação do workflow de CI do GitHub Actions em `.github/workflows/ci.yml`:
+  - Disparado em todo `push` e `pull_request`.
+  - Configurado com `pnpm/action-setup@v4` e cache nativo no `actions/setup-node@v4`.
+  - Instalação rigorosa via `pnpm install --frozen-lockfile`.
+  - Execução sequencial bloqueante de `pnpm lint`, `pnpm typecheck` e `pnpm test` (falha imediata em qualquer erro).
+- [x] Atualização de `docs/DECISOES.md` consolidando as escolhas arquiteturais até aqui (Monorepo com pnpm, Vitest, CI) com uma linha de motivo para cada uma.
+- [x] Validação local de todos os passos da esteira: lint limpo, typecheck estrito passando e 9 testes unitários aprovados.
+
+---
+
+## [2026-10-16] Configuração do Supabase CLI e Ambientes
+
+### O que foi feito:
+- [x] Inicialização do Supabase CLI com geração de `supabase/config.toml` (projeto `Protege_ADV`, PostgreSQL 17).
+- [x] Criação de scripts de banco de dados no `package.json` da raiz (`db:start`, `db:stop`, `db:reset`, `db:migrate`, `db:types`).
+- [x] Integração de tipagens do banco com `@supabase/supabase-js` em `apps/web/src/lib/supabase.ts` e exportação via `packages/shared`.
+- [x] Criação de `docs/AMBIENTES.md` com instruções detalhadas para São Paulo (`sa-east-1`), `supabase link`, `supabase start` e variáveis de ambiente.
+- [x] Atualização de `.env.example` com todas as variáveis para web e worker sem valores sensíveis.
+
+---
+
+## [2026-10-16] Fundação do Monorepo com pnpm Workspaces
+
+### O que foi feito:
+- [x] Estrutura monorepo com `pnpm-workspace.yaml` (`apps/web`, `apps/worker`, `packages/shared`, `packages/sources`, `supabase/`).
+- [x] `tsconfig.base.json` estrito, ESLint flat config, Prettier e Vitest Workspaces.
+
+## [2026-10-16] Implantação da Migration do Núcleo e Testes de Isolamento Multi-tenant (RLS)
+
+### O que foi feito:
+- [x] Importação do núcleo testado de `docs/base-sql/01_nucleo.sql` para [0001_nucleo.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0001_nucleo.sql):
+  - Enums: `conta_tipo`, `conta_situacao`, `perfil_usuario`, `modulo_sistema`, `processo_status`, `monitoramento_estado`, `papel_processo`.
+  - Tabelas fundamentais: `contas`, `usuarios`, `grupos`, `grupo_permissoes`, `usuario_grupos`, `etiquetas`, `processos`, `responsaveis_processo`.
+  - Funções com `security definer` e `search_path = public`: `conta_atual()`, `perfil_atual()`, `pode(modulo, acao)`, `pode_ver_processo(processo_id)`.
+  - Políticas de Row Level Security (RLS) ativadas em 100% das tabelas para estrito isolamento por `conta_id` e controle de permissões.
+- [x] Omissão intencional de `00_local_auth_stub.sql`, utilizando o schema nativo `auth.users` do Supabase.
+- [x] Adaptação da suíte de validação de isolamento para [teste_isolamento.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/tests/teste_isolamento.sql):
+  - Preenchimento de colunas obrigatórias do `auth.users` (`instance_id`, `aud`, `role`, `encrypted_password`, `email_confirmed_at`, `raw_app_meta_data`, `raw_user_meta_data`).
+  - Simulação de claims JWT de sessão com `request.jwt.claim.sub` e `request.jwt.claims`.
+  - Bateria com 9 casos de teste cobrindo visibilidade cruzada, injeção cross-tenant, permissão de escrita/exclusão, restrição de responsável e escalonamento de privilégios.
+- [x] Mapeamento minucioso de discrepâncias e campos complementares entre `01_nucleo.sql` e as seções 3, 4 e 18 do PRD.
+
+## [2026-10-16] Integração com o Banco de Dados Supabase Remoto
+
+### O que foi feito:
+- [x] Configuração dos arquivos `.env` (raiz), `apps/web/.env` e `apps/worker/.env` com a URL remota (`https://dvqrlgoqfsxrcjkfytfj.supabase.co`) e a chave anônima (`anon key`).
+- [x] Atualização de `apps/web/vite.config.ts` com `envDir: '../../'` para resolução confiável de variáveis de ambiente.
+- [x] Teste de conectividade com a API do Supabase remoto:
+  - Auth Service (GoTrue) ativo e respondendo (`200 OK`).
+  - Sessão e autenticação funcionando via `@supabase/supabase-js`.
+- [x] Aplicação e validação da migração [0001_nucleo.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0001_nucleo.sql) no banco remoto:
+  - Todas as 8 tabelas do núcleo respondendo com status 200 OK (`contas`, `usuarios`, `grupos`, `grupo_permissoes`, `usuario_grupos`, `etiquetas`, `processos`, `responsaveis_processo`).
+  - Triggers, tipos enums e políticas de RLS ativas.
+
+## [2026-10-16] Migration 0002: Empresas Monitoradas, Vínculos de Etiquetas e Campos Personalizados
+
+### O que foi feito:
+- [x] Criação de [0002_empresas_etiquetas_campos.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0002_empresas_etiquetas_campos.sql) contendo:
+  - `empresas_monitoradas`: Módulo Protege Empresa (seção 13 do PRD) com `cnpj`, `razao_social`, `nome_fantasia`, `monitoramento_ligado`, `cadastro_automatico` e `pessoa_id` (uuid sem FK, reservado para futura integração).
+  - `etiqueta_vinculos`: Vínculo N:N polimórfico entre `etiquetas` existentes e entidades (`processo`, `pessoa`, `contrato`, etc).
+  - `campos_personalizados` e `campos_personalizados_valores`: Definições configuráveis pelo dono da conta para processos/pessoas e armazenamento de valores tipados (seções 15.1 e 18).
+  - 100% das tabelas criadas com `conta_id`, índices, triggers de `atualizado_em` e políticas de Row Level Security (RLS) usando `conta_atual()` e `pode()`.
+  - Validação de integridade sintática e execução dos DDLs via PGlite com 100% de sucesso.
+- [x] Mapeamento de campos adicionais previstos nas seções 10, 13 e 18 do PRD para consideração futura da equipe.
+
+## [2026-10-16] Migration 0003: Operações Processuais (Partes, Andamentos, Buscas e Leituras)
+
+### O que foi feito:
+- [x] Criação de [0003_partes_andamentos_buscas_leituras.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0003_partes_andamentos_buscas_leituras.sql) contendo:
+  - `partes_processo`: Partes oficiais e manuais (`nome`, `nome_manual`, `polo`, `polo_manual`, `advogados`, `pessoa_id` sem FK, `origem`).
+  - `andamentos`: Movimentações processuais com unicidade `(conta_id, fonte, id_externo)` para evitar duplicidade de importação de fontes oficiais (DataJud).
+  - `pedidos_busca`: Fila de consultas do DataJud com estados do PRD 5.2 (`em_processamento`, `processada`, `monitorando`, `nao_monitorada`, `erro`, `arquivada`).
+  - `leituras`: Rastreamento individual de leitura por usuário para andamentos e publicações com unicidade `(item_tipo, item_id, usuario_id)`.
+  - Row Level Security (RLS) habilitado em 100% das tabelas, associado a `conta_atual()`, `pode()` e `pode_ver_processo(processo_id)`.
+  - Preservação da regra da Seção 18 do PRD: dados oficiais nunca sobrescritos por edições manuais (colunas `*_manual`).
+- [x] Validação sintática e de isolamento RLS:
+  - Execução encadeada das migrações 0001, 0002 e 0003 no PGlite.
+  - Execução dos testes de isolamento com resultado: `TODOS OS TESTES DE ISOLAMENTO PASSARAM`.
+
+## [2026-10-16] Migration 0004: Publicações (DJEN), Distribuições e Termos Vigiados
+
+### O que foi feito:
+- [x] Criação de [0004_publicacoes_distribuicoes_termos.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0004_publicacoes_distribuicoes_termos.sql) contendo:
+  - `termos_vigiados`: Monitoramento por tipo (`nome`, `advogado`, `oab`, `cnpj`), arrays de `variacoes` e `palavras_ignorar`, status `ativo`, `ultima_consulta_em` e `usuario_id` do criador.
+  - `termo_vigiado_destinatarios`: Vínculo N:N para usuários que recebem alertas instantâneos de cada termo.
+  - `publicacoes`: Caixa de entrada do DJEN com `id_comunicacao` único por conta, dados do órgão/tribunal, `data_disponibilizacao`, `teor`, `numero_cnj_citado`, `situacao` (`nova`, `lida`, `arquivada`), `tipo_vinculo` (`automatico`, `manual`, `nenhum`) e vínculo opcional a `processos`.
+  - `publicacao_termos`: Relacionamento N:N rastreando quais termos vigiados capturaram a comunicação oficial.
+  - `distribuicoes`: Caixa de triagem de novos processos com unicidade `(conta_id, numero_cnj)` e estados (`caixa`, `arquivada`, `ignorada`, `aceita`).
+  - Índices de performance solicitados para a caixa de publicações: `(conta_id, situacao, data_disponibilizacao desc)` e `(conta_id, numero_cnj_citado)`.
+  - Row Level Security (RLS) completo com herança de visualização de processos (`pode_ver_processo`), controle de módulo (`publicacoes` e `processos`) e `conta_atual()`.
+- [x] Validação sintática e de isolamento RLS:
+  - Execução encadeada de todas as 4 migrações (0001 a 0004) no PGlite.
+  - Execução da suíte de testes de isolamento com resultado: `TODOS OS TESTES DE ISOLAMENTO PASSARAM`.
+
+## [2026-10-16] Migration 0005: GED (Pastas, Arquivos, Versões, Modelos) e Avisos/Notificações
+
+### O que foi feito:
+- [x] Criação de [0005_ged_modelos_avisos.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0005_ged_modelos_avisos.sql) contendo:
+  - `ged_pastas`: Estrutura hierárquica em árvore e pastas automáticas associadas a processos (com `processo_id` cascade).
+  - `ged_arquivos`: Metadados dos documentos com referência a objetos do Supabase Storage (`caminho_storage`), tamanho, tipo MIME, controle de versão atual e exclusão suave por 30 dias.
+  - `ged_versoes`: Histórico completo de versões anteriores para auditoria, download e restauração.
+  - `modelos_documento`: Modelos de texto estruturados com suporte a variáveis automáticas e distinção entre modelos nativos do sistema (`sistema`) e customizados da conta (`conta`).
+  - `avisos`: Registro centralizado de notificações enviadas via WhatsApp, e-mail e sino interno com status (`enviado`, `entregue`, `lido`, `falhou`) e identificador polimórfico sem chave estrangeira (`referencia_tipo`, `referencia_id`).
+  - `preferencias_aviso`: Configuração granular por usuário dos canais de notificação desejados por tipo de evento e janelas de horário de silêncio.
+  - Row Level Security (RLS) habilitado em 100% das tabelas, associado a `conta_atual()`, `pode()`, `perfil_atual()` e `pode_ver_processo(processo_id)`.
+- [x] Validação sintática e de isolamento RLS:
+  - Execução encadeada de todas as 5 migrações (0001 a 0005) no PGlite.
+  - Execução da suíte de testes de isolamento com resultado: `TODOS OS TESTES DE ISOLAMENTO PASSARAM`.
+
+## [2026-10-16] Migration 0006: Auditoria, Consultas Externas, Acessos e Expurgo da Lixeira
+
+### O que foi feito:
+- [x] Criação de [0006_auditoria_consultas_expurgo.sql](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/supabase/migrations/0006_auditoria_consultas_expurgo.sql) contendo:
+  - `consultas_externas`: Telemetria de integrações com DataJud, DJEN e fontes externas (fonte, alvo, início, duração em ms, resultado e detalhes jsonb).
+  - `registro_atividade`: Trilha de auditoria completa (RF-CFG-04) em modelo append-only (quem, ação, entidade, entidade_id e detalhes jsonb).
+  - `registro_acesso`: Histórico e tentativas de login com IP, user-agent e resultado para conformidade LGPD e RNF-SEG-03.
+  - Função `expurgar_registros_excluidos()`: Rotina com `security definer` que apaga definitivamente pastas processuais e arquivos do GED que estejam na lixeira (`excluido_em`) há mais de 30 dias (PRD 17.5).
+  - Políticas de RLS habilitadas em todas as tabelas (com logs protegidos contra edição e exclusão por usuários autenticados).
+- [x] Validação sintática e de isolamento RLS:
+  - Execução encadeada de todas as 6 migrações (0001 a 0006) no PGlite.
+  - Execução da função `expurgar_registros_excluidos()`.
+  - Execução da suíte de testes de isolamento com resultado: `TODOS OS TESTES DE ISOLAMENTO PASSARAM`.
+
+## [2026-10-16] Seed Multi-tenant com 2 Contas, Documentação do Banco (docs/BANCO.md) e Geração de Tipos
+
+### O que foi feito:
+- [x] Criação de `supabase/seed.sql` com dados fictícios para 2 contas completas:
+  - **Conta 1 (Escritório):** `Silva & Associados Advocacia` (`tipo = escritorio`) com 3 usuários (`dono`, `advogado`, `estagiario`).
+  - **Conta 2 (Empresa):** `TechCorp Brasil Logística S.A.` (`tipo = empresa`) com 3 usuários (`dono`, `advogado`, `leitura`).
+  - **40 Processos (20 por conta):** Números CNJ matematicamente válidos e inventados com 20 dígitos numéricos estritos (`^[0-9]{20}$`).
+  - **Preenchimento de 100% das 30 tabelas ativas** criadas nas migrações 0001 a 0006 (`processos`, `partes_processo`, `andamentos`, `pedidos_busca`, `leituras`, `empresas_monitoradas`, `termos_vigiados`, `termo_vigiado_destinatarios`, `publicacoes`, `publicacao_termos`, `distribuicoes`, `ged_pastas`, `ged_arquivos`, `ged_versoes`, `modelos_documento`, `avisos`, `preferencias_aviso`, `etiquetas`, `etiqueta_vinculos`, `campos_personalizados`, `campos_personalizados_valores`, `consultas_externas`, `registro_atividade`, `registro_acesso`, `contas`, `usuarios`, `grupos`, `grupo_permissoes`, `usuario_grupos`, `responsaveis_processo`).
+  - As tabelas de `pessoas`, `compromissos` e `contratos` foram mantidas fora do seed conforme previsto para a Fase 8.
+- [x] Criação de `docs/BANCO.md`:
+  - Relação exaustiva de todas as 30 tabelas com uma frase explicativa de seu propósito de negócio.
+  - Diagrama relacional de Entidade-Relacionamento em sintaxe Mermaid (`erDiagram`).
+  - Resumo de conformidade com regras de RLS, segurança e expurgo.
+- [x] Geração e validação dos tipos TypeScript do Supabase:
+  - Criação do gerador universal `scripts/db_types.mjs` com fallback automático via PGlite para ambientes sem Docker Desktop.
+  - Atualização de `packages/shared/src/database.types.ts` com todas as 30 tabelas, colunas, enums e funções.
+  - `pnpm db:types`, `pnpm typecheck`, `pnpm lint` e `pnpm test` executados com 100% de aprovação.
+
+## [2026-11-05] Inicialização do Versionamento Git e Auditoria de Segurança
+
+### O que foi feito:
+- [x] Auditoria estrita do `.gitignore` garantindo a exclusão de `.env`, `.env.*`, `node_modules`, `dist`, `.turbo`, `.cache` e temporários, preservando `.env.example`.
+- [x] Verificação e confirmação de isolamento: todos os arquivos `.env` (raiz, `apps/web/.env`, `apps/worker/.env`) devidamente ignorados pelo Git.
+- [x] Varredura pré-commit de segredos, tokens JWT (`eyJ`), chaves `service_role` e senhas em arquivos versionados: zero segredos detectados.
+- [x] Configuração da branch principal `main` e criação do commit inicial:
+  - Commit único consolidando as etapas iniciais: `base inicial: fases 0 a 2 parciais`.
+- [x] **Atenção sobre Integrações e Migrations:**
+  - O MCP do Supabase (`supabase-mcp-server`) está apontando para o projeto errado (`qlrxponkhpvfvepnxmzo`) e **NÃO deve ser usado para aplicar migrations**.
+  - A aplicação das migrations `0002` a `0006` e do `seed.sql` deve ser feita manualmente via SQL Editor no dashboard oficial do projeto dev (`dvqrlgoqfsxrcjkfytfj`).
+
+### Próximos passos:
+- [ ] Aplicar as migrations `0002` até `0006` e o `seed.sql` no SQL Editor do Supabase Dashboard (projeto remoto).
+- [ ] Implementar casca de navegação do front-end (`apps/web`) seguindo `docs/DESIGN.md` (tema escuro com roxo, sem gráficos).
+- [ ] Implementar Caixa de Entrada de Publicações (Módulo 7 do PRD).
+
+
