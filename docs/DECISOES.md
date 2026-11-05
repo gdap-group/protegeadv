@@ -13,6 +13,7 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Visibilidade Granular de Contratos (ADR 011):** Função `pode_ver_contrato()` com `security definer` para evitar recursão de RLS e garantir restrição de visualização para advogados restritos, partes e criador.
 - **Aderência Estrita ao PRD em Contratos:** Remoção de `contratos.valor` em conformidade com as Seções 12 e 18 do PRD.
 - **Região de Ambientes e Teste de Isolamento Remoto (ADR 012):** Projeto dev (`dvqrlgoqfsxrcjkfytfj`) em `us-east-1` tolerado exclusivamente para testes e homologação com dados sintéticos, mantendo a obrigatoriedade estrita de `sa-east-1` (São Paulo) para produção conforme PRD 19. Validação de isolamento executada contra o banco real via `pnpm test:db:remoto`.
+- **Tema Canônico e Governança de Cores (ADR 013):** Centralização de 100% dos tokens de cores em `apps/web/src/theme.css` com 13 cores exatas, fontes locais `@fontsource` (Inter e JetBrains Mono), rota de homologação `/_design` (DEV only) e teste automatizado bloqueante contra cores hex/rgb literais fora do tema.
 
 ---
 
@@ -127,6 +128,20 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
   2. Reafirmar a exigência mandante do PRD 19 de que o ambiente de Produção (`protege-adv-prod`) deve ser provisionado obrigatoriamente na região `sa-east-1` (São Paulo), prevenindo bloqueios por geolocalização por parte do DJEN, DataJud e tribunais brasileiros, além de conformidade com a LGPD.
   3. Adição do script `pnpm test:db:remoto` (`scripts/run_test_db.mjs --remote`) com validação defensiva do project-ref no `.env`, checagem prévia do schema (39 tabelas e 2 contas) e execução transacional segura com `ROLLBACK` de `teste_isolamento_completo.sql`.
 - **Motivo:** Permite avançar no desenvolvimento e validação técnica imediata com o ambiente cloud já ativo, sem custos adicionais de provisionamento imediato de novas instâncias, preservando a governança e o bloqueio estrito para o lançamento produtivo.
+
+---
+
+## ADR 013: Centralização de Tokens, Tema Canônico e Governança Visual no Front-End
+- **Status:** Aceito
+- **Contexto:** Para garantir que todas as telas subsequentes do Protege ADV possuam consistência visual absoluta e nenhum desenvolvedor ou tela introduza cores arbitrárias fora da paleta do sistema, é necessário um único ponto de verdade (Single Source of Truth) para tokens visuais e testes automatizados de governança.
+- **Decisão:**
+  1. Centralizar todas as 13 cores canônicas do sistema em `apps/web/src/theme.css` (`bg`, `surface`, `elevated`, `border`, `primary`, `primary-hover`, `glow`, `gradient-from`, `gradient-to`, `text`, `muted`, `success`, `warning`, `danger`).
+  2. Provedor de componentes shadcn/ui configurado via `components.json` mapeando as variáveis para compatibilidade nativa.
+  3. Tipografia instalada estritamente via `@fontsource/inter` e `@fontsource/jetbrains-mono` em pacotes locais, dispensando CDNs externas para privacidade, performance offline e conformidade estrita.
+  4. Padronização de forma e movimento: raio de 12px para cartões, 8px para campos, bordas de 1px, brilho suave em roxo (`glow-card`), transições de 150-200ms, linhas de tabela de 44px e `:focus-visible` roxo em todos os controles interativos.
+  5. Criação da rota `/_design` condicionada estritamente a `import.meta.env.DEV` com carregamento dinâmico (`React.lazy`), garantindo que seja removida (tree-shaken) no build de produção.
+  6. Criação de teste de regressão estrito em Vitest (`apps/web/src/theme.test.ts`) que inspeciona todos os arquivos de `apps/web/src` e falha se qualquer hexadecimal (`#...`) ou `rgb()/rgba()` for encontrado fora de `theme.css`.
+- **Motivo:** Previne desvios visuais, elimina inconsistências entre telas e garante um design system robusto, acessível e auditável antes da construção das funcionalidades de negócio.
 
 
 

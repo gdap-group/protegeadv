@@ -9,34 +9,48 @@ O **Protege ADV & Protege Empresa** possui um design escuro premium com toques v
 
 ---
 
-## 2. Paleta de Cores
+## 2. Paleta de Cores e Tokens Oficiais (Fase 3 - Canônica)
 
-### Tons de Fundo e Superfícies (Preto e Grafite Escuro)
-- **Fundo Principal (Background):** `#090A0F` (Preto profundo com leve matiz índigo/roxo)
-- **Superfície Secundária / Card (Surface):** `#11131C` (Cinza escuro acetinado)
-- **Superfície Elevada / Hover (Elevated):** `#181B28`
-- **Bordas Sutis (Borders):** `#222638`
-- **Divisores e Linhas Guia:** `#1C2030`
+Todas as cores vêm de variáveis em um único arquivo canônico (`apps/web/src/theme.css`):
 
-### Cores de Destaque (Brand / Accent - Roxo Moderno)
-- **Roxo Principal (Primary):** `#7C3AED` (Violet 600)
-- **Roxo Interativo / Hover:** `#6D28D9` (Violet 700)
-- **Roxo Brilhante (Glow / Highlights):** `#8B5CF6` (Violet 500)
-- **Roxo Claro (Badges / Tags):** `#A78BFA` (Violet 400)
-- **Fundo de Destaque Roxo Transparente:** `rgba(124, 58, 237, 0.12)`
+### Tons de Fundo e Superfícies
+- **Fundo Principal (`bg`):** `#0A0A0F` (`--color-bg`)
+- **Superfície Secundária / Card (`surface`):** `#12121A` (`--color-surface`)
+- **Superfície Elevada / Menus (`elevated`):** `#1A1A26` (`--color-elevated`)
+- **Borda Sutil (`border`):** `rgba(255, 255, 255, 0.08)` (`--color-border`)
 
-### Cores de Apoio e Estados Semânticos
-- **Sucesso / Em dia:** `#10B981` (Esmeralda) / `rgba(16, 185, 129, 0.15)`
-- **Atenção / Aguardando atualização / Pendente:** `#F59E0B` (Âmbar) / `rgba(245, 158, 11, 0.15)`
-- **Alerta / Erro / Prazo Vencido:** `#EF4444` (Vermelho) / `rgba(239, 68, 68, 0.15)`
-- **Informativo / Neutro / Não monitorado:** `#64748B` (Slate) / `rgba(100, 116, 139, 0.15)`
+### Destaque e Ação (Roxo / Violeta)
+- **Roxo Principal (`primary`):** `#8B5CF6` (`--color-primary`)
+- **Roxo Interativo / Hover (`primary-hover`):** `#7C3AED` (`--color-primary-hover`)
+- **Brilho Suave / Glow (`glow`):** `#A78BFA` (`--color-glow` / `--shadow-glow`)
+- **Gradiente de Destaque:** De `#8B5CF6` (`--color-gradient-from`) para `#6366F1` (`--color-gradient-to`)
 
-### Tipografia e Cores de Texto
-- **Texto Primário (Headings / Body Principal):** `#F8FAFC` (Slate 50)
-- **Texto Secundário (Descrições / Metadados):** `#94A3B8` (Slate 400)
-- **Texto Esmaecido (Placeholders / Dicas):** `#64748B` (Slate 500)
-- **Família Tipográfica:** `Inter`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `sans-serif`
-- **Monospace (Número CNJ, Códigos):** `JetBrains Mono`, `Fira Code`, `ui-monospace`, `monospace`
+### Tipografia e Neutros
+- **Texto Principal (`text`):** `#F4F4F8` (`--color-text`)
+- **Texto Secundário (`muted`):** `#9CA3AF` (`--color-muted`)
+
+### Estados Semânticos
+- **Sucesso / Em dia (`success`):** `#34D399` (`--color-success`)
+- **Atenção / Pendente (`warning`):** `#FBBF24` (`--color-warning`)
+- **Alerta / Erro / Prazo Vencido (`danger`):** `#F87171` (`--color-danger`)
+
+---
+
+## 3. Tipografia, Forma e Movimento
+
+### 3.1 Tipografia (@fontsource local)
+- **Interface Geral:** `Inter` (pesos 400, 500, 600, 700) instalada localmente via `@fontsource/inter` (sem CDNs externas).
+- **Códigos e Números CNJ:** `JetBrains Mono` (pesos 400, 500, 600) via `@fontsource/jetbrains-mono`.
+- **Tamanhos e Pesos:** Corpo de 14px a 15px; Títulos em peso 600 (`font-semibold`).
+
+### 3.2 Forma e Movimento
+- **Raio de Cartões:** `12px` (`rounded-[var(--radius-card)]` / `12px`).
+- **Raio de Campos de Entrada:** `8px` (`rounded-[var(--radius-input)]` / `8px`).
+- **Espessura de Bordas:** `1px` (`border border-[var(--color-border)]`).
+- **Sombras:** Exclusivamente como brilho roxo suave (`glow-card` / `box-shadow: 0 0 24px -4px rgba(167, 139, 250, 0.25)`).
+- **Transições:** Entre `150ms` e `200ms` (`transition-all duration-150` ou `duration-200`).
+- **Linhas de Tabela:** Altura padronizada de `44px` (`table-row-standard`).
+- **Foco Acessível:** Foco visível em roxo em todos os elementos interativos (`:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }`).
 
 ---
 

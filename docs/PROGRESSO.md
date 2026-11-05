@@ -4,6 +4,41 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
 
 ---
 
+## [2026-11-05] Passo 3.1 Concluído: Tokens, Tema Canônico e Página de Teste de Cores (Fase 3)
+
+### O que foi feito:
+- [x] **Configuração de shadcn/ui e Tailwind v4:**
+  - Criação do arquivo de governança [apps/web/components.json](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/components.json) integrando Tailwind v4, `@/lib/utils` e Lucide Icons.
+  - Mapeamento das variáveis semânticas de `:root` para o design system do shadcn/ui.
+- [x] **Centralização dos Tokens de Cor em Arquivo Único:**
+  - Criação do arquivo canônico [apps/web/src/theme.css](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/theme.css) contendo rigorosamente as 13 cores oficiais:
+    `bg` (`#0A0A0F`), `surface` (`#12121A`), `elevated` (`#1A1A26`), `border` (`rgba(255,255,255,0.08)`), `primary` (`#8B5CF6`), `primary-hover` (`#7C3AED`), `glow` (`#A78BFA`), gradiente de destaque (`#8B5CF6` para `#6366F1`), `text` (`#F4F4F8`), `muted` (`#9CA3AF`), `success` (`#34D399`), `warning` (`#FBBF24`), `danger` (`#F87171`).
+- [x] **Tipografia Local com @fontsource:**
+  - Instalação dos pacotes locais `@fontsource/inter` e `@fontsource/jetbrains-mono` em `apps/web` (sem dependência de fontes externas ou CDNs).
+  - Aplicação de `Inter` para interface geral (corpo 14-15px, títulos peso 600) e `JetBrains Mono` para números de processo CNJ, códigos e identificadores.
+- [x] **Forma, Movimento e Acessibilidade:**
+  - Raio de 12px para cartões e 8px para campos de formulário.
+  - Borda sutil de 1px e efeito de brilho roxo suave (`glow-card` / `--shadow-glow`).
+  - Linhas de tabela com altura padronizada de 44px (`.table-row-standard`).
+  - Foco visível em roxo (`:focus-visible`) em 100% dos elementos interativos com outline de 2px em `var(--color-primary)`.
+  - Transições suaves de 150ms a 200ms.
+- [x] **Rota de Teste de Design (`/_design`):**
+  - Implementação em [apps/web/src/pages/DesignPage.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/pages/DesignPage.tsx) exibindo as 13 cores com valores lidos dinamicamente de CSS, escala tipográfica, cartão com brilho, botão com gradiente, controles de formulário com foco e tabela com linhas de 44px.
+  - Isolamento estrito para desenvolvimento: ativada apenas sob `import.meta.env.DEV` com `React.lazy()`.
+  - Verificação de build de produção: confirmada a exclusão completa (tree-shaking) do bundle final.
+- [x] **Teste Automatizado de Governança de Cores:**
+  - Criação de [apps/web/src/theme.test.ts](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/theme.test.ts).
+  - Varre recursivamente `apps/web/src` e falha se qualquer hexadecimal ou função `rgb()`/`rgba()` for declarada fora de `theme.css`.
+- [x] **Cálculo de Razão de Contraste WCAG:**
+  - `text` sobre `bg`: **18.00:1** (APROVADO >= 4.5:1)
+  - `muted` sobre `bg`: **7.78:1** (APROVADO >= 4.5:1)
+  - `text` sobre `surface`: **16.98:1** (APROVADO >= 4.5:1)
+  - `muted` sobre `surface`: **7.34:1** (APROVADO >= 4.5:1)
+  - `branco` (`#FFFFFF`) sobre `primary` (`#8B5CF6`): **4.23:1** (ALERTA: abaixo de 4.5:1 para texto normal; atende ao critério de 3:1 para texto grande e componentes gráficos).
+
+
+---
+
 ## [2026-11-05] Aplicação de Migrations 0001 a 0010 e Teste de Isolamento no Supabase Real (dev: dvqrlgoqfsxrcjkfytfj)
 
 ### O que foi feito:

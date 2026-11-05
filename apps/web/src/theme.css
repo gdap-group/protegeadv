@@ -1,0 +1,32 @@
+/*
+ * apps/web/src/theme.css
+ * ARQUIVO ÚNICO DE TEMA DO SISTEMA
+ *
+ * Contém a definição canônica de todas as cores, tokens e variáveis visuais do Protege ADV.
+ * Nenhuma cor hexadecimal ou rgb() deve existir fora deste arquivo no front-end.
+ */
+
+:root {
+  /* 13 Cores Canônicas do Sistema */
+  --color-bg: #0A0A0F;
+  --color-surface: #12121A;
+  --color-elevated: #1A1A26;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #7C3AED;
+  --color-glow: #A78BFA;
+  --color-gradient-from: #8B5CF6;
+  --color-gradient-to: #6366F1;
+  --color-text: #F4F4F8;
+  --color-muted: #9CA3AF;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
+
+  /* Forma e Movimento */
+  --radius-card: 12px;
+  --radius-input: 8px;
+  --shadow-glow: 0 0 24px -4px rgba(167, 139, 250, 0.25);
+  --table-row-height: 44px;
+}
+
