@@ -2,6 +2,7 @@
   "name": "protege",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.17.1",
   "scripts": {
     "dev": "pnpm --filter @protege/web dev",
     "build": "pnpm --filter @protege/web build",

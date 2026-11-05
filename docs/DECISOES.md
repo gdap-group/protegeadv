@@ -6,6 +6,7 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 
 ## Resumo das Escolhas Principais
 - **Monorepo com pnpm:** Instalação ultra-rápida, deduplicação de dependências via hard links e gestão segura de pacotes locais via `workspace:*`.
+- **packageManager no package.json:** Fixa a versão exata do pnpm (`pnpm@10.17.1`), garantindo compatibilidade determinística com `pnpm/action-setup` no CI do GitHub Actions sem duplicar chaves.
 - **Vitest:** Execução de testes em ESM nativo com suporte direto a TypeScript e ambientes isolados (`jsdom` e `node`) em workspaces.
 - **CI (GitHub Actions):** Automação em todo push e pull request com cache de dependências que bloqueia qualquer falha de lint, typecheck ou teste.
 
