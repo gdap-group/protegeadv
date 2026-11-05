@@ -14,6 +14,7 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Aderência Estrita ao PRD em Contratos:** Remoção de `contratos.valor` em conformidade com as Seções 12 e 18 do PRD.
 - **Região de Ambientes e Teste de Isolamento Remoto (ADR 012):** Projeto dev (`dvqrlgoqfsxrcjkfytfj`) em `us-east-1` tolerado exclusivamente para testes e homologação com dados sintéticos, mantendo a obrigatoriedade estrita de `sa-east-1` (São Paulo) para produção conforme PRD 19. Validação de isolamento executada contra o banco real via `pnpm test:db:remoto`.
 - **Tema Canônico e Governança de Cores (ADR 013):** Centralização de 100% dos tokens de cores em `apps/web/src/theme.css` com 13 cores exatas, fontes locais `@fontsource` (Inter e JetBrains Mono), rota de homologação `/_design` (DEV only) e teste automatizado bloqueante contra cores hex/rgb literais fora do tema.
+- **Componentes Base e Acessibilidade WAI-ARIA (ADR 014):** Biblioteca de 17 componentes em `apps/web/src/components/ui` com Radix UI, TanStack Table e shadcn/ui. Contraste mínimo de 4,5:1 (Button primary com fundo `#7C3AED` a 5,7:1, links em cards com `#A78BFA`), badges multimodais com ícone e texto, e 100% de cobertura com vitest-axe.
 
 ---
 
@@ -142,6 +143,25 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
   5. Criação da rota `/_design` condicionada estritamente a `import.meta.env.DEV` com carregamento dinâmico (`React.lazy`), garantindo que seja removida (tree-shaken) no build de produção.
   6. Criação de teste de regressão estrito em Vitest (`apps/web/src/theme.test.ts`) que inspeciona todos os arquivos de `apps/web/src` e falha se qualquer hexadecimal (`#...`) ou `rgb()/rgba()` for encontrado fora de `theme.css`.
 - **Motivo:** Previne desvios visuais, elimina inconsistências entre telas e garante um design system robusto, acessível e auditável antes da construção das funcionalidades de negócio.
+
+---
+
+## ADR 014: Componentes Base, Regras de Contraste e Acessibilidade (Passo 3.2)
+- **Status:** Aceito
+- **Contexto:**
+  1. A construção das telas de negócio requer componentes reutilizáveis, padronizados e com acessibilidade nativa por teclado e leitores de tela.
+  2. A regra de contraste WCAG AA impõe mínimo de 4,5:1 para texto normal. Na auditoria do Passo 3.1, o texto branco sobre `#8B5CF6` atingiu 4,23:1 (abaixo do limiar).
+  3. Informações de status e prazos não podem depender exclusivamente de cor para transmitir significado (critério WCAG 1.4.1).
+- **Decisão:**
+  1. Criação dos 17 componentes base em `apps/web/src/components/ui`: `Button`, `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`, `Badge`, `Card`, `Tabs`, `Dialog`, `Sheet`, `Dropdown`, `Tooltip`, `Toast`, `Skeleton`, `EmptyState` e `DataTable`.
+  2. Implementação das regras de contraste:
+     - `Button` na variante `primary` utiliza como fundo base a cor `primary-hover` (`#7C3AED`), garantindo contraste de **5,7:1** com texto branco/claro, bem acima dos 4,5:1 exigidos. O estado hover emprega o gradiente canônico de destaque e brilho roxo (`glow-card`).
+     - Links e textos secundários de destaque dentro de cartões (`surface`) utilizam a cor `glow` (`#A78BFA`), garantindo legibilidade perfeita sobre fundos escuros.
+     - `Badge` implementa variantes com ícones semânticos embutidos (`CheckCircle2`, `AlertTriangle`, `AlertCircle`, `MinusCircle`, `Info`), garantindo redundância visual (ícone + texto) sem dependência exclusiva de cor.
+     - Foco roxo visível (`:focus-visible`) configurado em 100% dos controles com `outline: 2px solid var(--color-primary)` e anel offset.
+  3. `DataTable` construída sobre `@tanstack/react-table` (v8) com ordenação dinâmica por coluna, paginação e seleção de linhas com checkboxes acessíveis, respeitando a altura de 44px por linha (`.table-row-standard`).
+  4. Suíte automatizada de testes com `vitest-axe` cobrindo renderização, atributos ARIA, ausência de violações de acessibilidade e navegação por teclado (`Tab`, `Enter`, `Espaço` e `Esc` em diálogos, painéis laterais e menus dropdown).
+- **Motivo:** Fornece os blocos de construção essenciais com conformidade WCAG AA estrita e experiência de usuário de nível startup antes do desenvolvimento das interfaces de processos e publicações.
 
 
 

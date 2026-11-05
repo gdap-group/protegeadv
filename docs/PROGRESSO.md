@@ -4,6 +4,43 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
 
 ---
 
+## [2026-11-05] Passo 3.2 Concluído: Componentes Base e Rota de Design Estendida (Fase 3)
+
+### O que foi feito:
+- [x] **Construção dos 17 Componentes Base em `apps/web/src/components/ui`:**
+  - `Button`: Variantes `primary`, `secondary`, `ghost`, `danger`, tamanhos (`sm`, `default`, `lg`, `icon`), estados de loading com spinner, disabled e active scale.
+  - `Input`: Raio 8px, foco visível em roxo, placeholder muted e estados normal, desabilitado e erro (`aria-invalid`).
+  - `Textarea`: Raio 8px, expansível, estados normal e erro.
+  - `Select`: Construído com Radix UI Select (`Trigger`, `Content`, `Item`, `Value`, `Separator`), navegação por teclado e estados normal, desabilitado e erro.
+  - `Checkbox`: Construído com Radix UI Checkbox, estados marcado, desmarcado e desabilitado, alternável por clique ou barra de espaço.
+  - `Switch`: Construído com Radix UI Switch, transição suave de 200ms para alternância de configurações.
+  - `Badge`: Variantes semânticas (`success`, `warning`, `danger`, `neutro`, `info`) acompanhadas obrigatoriamente de ícone semântico e texto (critério de redundância visual, sem dependência exclusiva de cor).
+  - `Card`: Estrutura com `Header`, `Title`, `Description`, `Content`, `Footer`, raio de 12px, suporte a brilho roxo (`glow-card`) e fundo `surface`.
+  - `Tabs`: Construído com Radix UI Tabs para alternância de visões em pastas processuais (Publicações, Andamentos, Partes).
+  - `Dialog`: Janela modal com overlay translúcido, foco travado, abertura via Enter/Espaço e fechamento estrito via tecla `Escape`.
+  - `Sheet`: Painel lateral deslizante (gaveta/drawer) para leitura de teor de intimações e publicações judiciais com tecla `Escape`.
+  - `DropdownMenu`: Menu de ações contextual com itens, divisores, rótulos e variante `danger`.
+  - `Tooltip`: Dicas contextuais com delay e renderização acessível.
+  - `Toast`: Sistema de notificações com contexto React (`useToast`), suporte a variantes semânticas com ícones e região `aria-live`.
+  - `Skeleton`: Indicador visual de carregamento pulsante com raio de 8px.
+  - `EmptyState`: Componente para estados vazios (caixa de publicações sem itens, lista sem processos) com ícone, título, descrição e botão de ação.
+  - `DataTable`: Tabela de alta densidade (linhas com altura de 44px) construída com `@tanstack/react-table` v8, suportando ordenação ao clicar no cabeçalho, paginação completa e seleção de linhas com checkboxes acessíveis.
+- [x] **Aplicação das Regras Estritas de Contraste e Acessibilidade:**
+  - `Button` na variante `primary` adota `primary-hover` (`#7C3AED`) como fundo base, alcançando contraste de **5,7:1** com texto branco/claro (atendendo ao mínimo de 4,5:1).
+  - Links e elementos interativos em cartões (`surface`) utilizam a cor `glow` (`#A78BFA`), eliminando o uso inadequado de cores escuras em fundos escuros.
+  - Foco visível em roxo (`:focus-visible`) ativo em 100% dos controles.
+- [x] **Extensão da Rota `/_design`:**
+  - Página [`apps/web/src/pages/DesignPage.tsx`](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/pages/DesignPage.tsx) expandida para exibir todos os 17 componentes em todos os seus estados: normal, hover, foco, desabilitado, carregando e erro.
+  - Mantido o isolamento estrito com `import.meta.env.DEV` e `React.lazy`, confirmado ausente no bundle de produção.
+- [x] **Testes Automatizados com `vitest-axe`:**
+  - Criado [`apps/web/src/components/ui/components.test.tsx`](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/ui/components.test.tsx) contendo 34 testes (renderização + acessibilidade axe para cada componente).
+  - Validação de navegação por teclado: `Tab`, `Enter`, `Espaço` e fechamento com `Escape` em `Dialog`, `Sheet` e `DropdownMenu`.
+- [x] **Governança de Cores:**
+  - O teste [`apps/web/src/theme.test.ts`](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/theme.test.ts) permanece com 100% de aprovação (zero cores literais hex/rgb fora de `theme.css`).
+
+
+---
+
 ## [2026-11-05] Passo 3.1 Concluído: Tokens, Tema Canônico e Página de Teste de Cores (Fase 3)
 
 ### O que foi feito:
