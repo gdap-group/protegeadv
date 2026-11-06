@@ -116,6 +116,7 @@ export function Sidebar({
           const linkContent = (
             <NavLink
               to={item.path}
+              aria-label={isCollapsed && !isMobileDrawer ? item.title : undefined}
               onClick={onCloseMobileDrawer}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-input)] text-sm font-medium transition-colors duration-150',

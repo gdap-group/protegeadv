@@ -27,8 +27,11 @@ import {
   DialogFooter,
 } from '../ui/dialog';
 import { Button } from '../ui/button';
-import '../../lib/zod-pt'; // Garante o registro do mapa de erro em português
+import { configurarZodPt } from '@protege/shared';
 import { cn } from '../../lib/utils';
+
+// Garante o registro global do mapa de erros amigáveis em português
+configurarZodPt();
 
 export interface FormularioEmPainelProps<TFormValues extends FieldValues> {
   open: boolean;

@@ -41,7 +41,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  TooltipProvider,
   Tooltip,
   TooltipTrigger,
   TooltipContent,
@@ -226,8 +225,7 @@ export default function DesignPage() {
 
   return (
     <ToastProvider>
-      <TooltipProvider>
-        <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] p-8 max-w-7xl mx-auto space-y-16">
+      <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] p-8 max-w-7xl mx-auto space-y-16">
           {/* Cabeçalho */}
           <header className="border-b border-[var(--color-border)] pb-6 flex items-center justify-between">
             <div>
@@ -984,7 +982,6 @@ export default function DesignPage() {
             </div>
           </section>
         </div>
-      </TooltipProvider>
-    </ToastProvider>
-  );
+      </ToastProvider>
+    );
 }

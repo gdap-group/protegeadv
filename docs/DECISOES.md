@@ -16,6 +16,9 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
 - **Tema Canônico e Governança de Cores (ADR 013):** Centralização de 100% dos tokens de cores em `apps/web/src/theme.css` com 13 cores exatas, fontes locais `@fontsource` (Inter e JetBrains Mono), rota de homologação `/_design` (DEV only) e teste automatizado bloqueante contra cores hex/rgb literais fora do tema.
 - **Componentes Base e Acessibilidade WAI-ARIA (ADR 014):** Biblioteca de 17 componentes em `apps/web/src/components/ui` com Radix UI, TanStack Table e shadcn/ui. Contraste mínimo de 4,5:1 (Button primary com fundo `#7C3AED` a 5,7:1, links em cards com `#A78BFA`), badges multimodais com ícone e texto, e 100% de cobertura com vitest-axe.
 - **Casca do Sistema, Menu e Busca Global (ADR 015):** Layout principal com Sidebar colapsável e persistida em localStorage, gaveta Sheet para mobile (< 768px), paleta de comandos via `cmdk` (Ctrl+K), PermissoesProvider alinhado ao enum `modulo_sistema`, correção de contraste do Button primary no hover (fundo `#7C3AED` + glow a 5,7:1) e páginas-esqueleto sem dados falsos.
+- **Modelos Reutilizáveis de Página (ADR 016):** Modelos PaginaLista, PaginaDetalhe e FormularioEmPainel (com validação Zod traduzida e alerta de perda de dados isDirty), integrando TanStack Table, Sheet e acessibilidade WAI-ARIA sem dados falsos em produção.
+- **Rota e Arquitetura de Demonstração Comercial (/demo) (ADR 017):** Rota interativa isolada para apresentação comercial com dados 100% fictícios restritos a `apps/web/src/demo/`, controlada por `VITE_MODO_DEMO=true`, tree-shaking comprovado na compilação padrão e exclusão obrigatória e programada para o Passo 10.5.
+- **Provedor Global de Tooltip, ErrorBoundary e Fallback de Demonstração (ADR 018):** `TooltipProvider` centralizado na raiz de `App.tsx` prevenindo quebras em visualizações estreitas/recolhidas, `ErrorBoundary` estilizado no tema para captura resiliente de falhas de renderização, e página informativa amigável para `/demo` desligada em ambiente de desenvolvimento com exclusão comprovada no bundle de produção.
 
 ---
 
@@ -211,6 +214,50 @@ Este documento registra as decisões técnicas, arquiteturais e de design tomada
      - Suíte de testes com Vitest, Testing Library e `vitest-axe` comprovando ausência de violações de acessibilidade (`axe`), conformidade estrita de contraste, ordem de cabeçalhos (`h1 -> h2`) e navegação completa por teclado (`Tab`, `Enter`, `Esc`).
      - Teste de governança de cores (`theme.test.ts`) mantido com 100% de sucesso (zero valores literais hexadecimais ou rgb fora de `theme.css`).
 - **Motivo:** Acelera a entrega dos passos seguintes com componentes de alto nível consistentes, acessíveis e à prova de regressão.
+
+---
+
+## ADR 017: Rota e Arquitetura de Demonstração Interativa (/demo) e Exclusão Obrigatória no Passo 10.5
+- **Status:** Aceito
+- **Contexto:**
+  1. Para fins de apresentação comercial e alinhamento de produto com potenciais clientes e partes interessadas, a aplicação precisa ser navegável com volume representativo de dados judiciais (processos, publicações do DJEN, prazos na agenda e diretório de partes).
+  2. No entanto, o sistema real ainda não possui a integração dos módulos de negócio das fases subsequentes (Fases 4 a 9) e **nenhum dado fictício pode residir nos arquivos de produção** ou poluir os modelos de negócio reais.
+  3. É imperativo que a demonstração não pareça obsoleta no futuro (datas de prazos judiciais e intimações devem ser dinâmicas e sempre contemporâneas à data da demonstração) e que os números de processo CNJ fictícios sejam válidos segundo o algoritmo de dígito verificador módulo 97 (`validarNumeroCNJ`).
+- **Decisão:**
+  1. **Isolamento de Código e Dados:** Todos os dados fictícios foram concentrados em um único arquivo: `apps/web/src/demo/dados-demo.ts`. Nenhum outro arquivo de produção fora da pasta `apps/web/src/demo` possui permissão para importar esse arquivo (validado por teste de regressão estrito em Vitest).
+  2. **Datas Relativas e CNJs Válidos:** Todas as datas de intimações, andamentos e prazos utilizam função utilitária `diasRelativos(n)` que calcula offsets em relação ao momento da execução (`new Date()`), garantindo que prazos em aberto, vencidos e futuros estejam sempre calibrados no momento da apresentação. Todos os CNJs fictícios foram gerados e verificados com a função oficial `validarNumeroCNJ` de `@protege/shared`.
+  3. **Banner de Transparência e Casca Dedicada:** Toda tela de demonstração renderiza no topo um banner fixo e visível: *"Demonstração com dados fictícios"*. O layout conta com navegação lateral personalizada e contador dinâmico de publicações não lidas no menu.
+  4. **Ativação Condicional e Tree-Shaking:**
+     - A rota `/demo` é ativada exclusivamente quando a variável de ambiente `VITE_MODO_DEMO=true` estiver definida.
+     - A importação do módulo de demonstração em `apps/web/src/App.tsx` utiliza `React.lazy` associado a `import.meta.env.VITE_MODO_DEMO === 'true'`.
+     - Quando `VITE_MODO_DEMO=false` (ou em build de produção padrão), o Rollup / Vite substitui a expressão por `false` e remove integralmente o código de `/demo`, os dados mockados e o banner da compilação final (testado e comprovado via verificação nos bundles de saída).
+  5. **Compromisso de Remoção Mandatória no Passo 10.5:**
+     - A rota `/demo`, o diretório `apps/web/src/demo` e a flag `VITE_MODO_DEMO` têm existência **estritamente temporária**.
+     - No **Passo 10.5** (Limpeza Final e Hardening pré-entrega), todo o diretório `apps/web/src/demo`, suas referências no `App.tsx`, na configuração de ambiente e nos testes serão **definitiva e completamente removidos do repositório**, deixando a base 100% limpa para operação em produção.
+- **Motivo:** Permite conduzir demonstrações comerciais ricas, dinâmicas e realistas durante a fase de desenvolvimento, mantendo estrita conformidade com as regras de governança, sem risco de vazamento de dados fictícios para o produto final.
+
+---
+
+## ADR 018: Provedor Global de Tooltip, ErrorBoundary e Fallback Informativo de Demonstração Desligada
+- **Status:** Aceito
+- **Contexto:**
+  1. Ao abrir a aplicação em larguras estreitas (376px — modo celular) ou com a barra lateral recolhida (`protege_sidebar_collapsed = 'true'`), o componente `Sidebar` desktop continuava montado no Virtual DOM (oculto apenas via CSS `hidden md:block`) e renderizava `<Tooltip>` para cada item de navegação.
+  2. Como nenhum `TooltipProvider` envolvia a raiz da aplicação (`App.tsx`), a biblioteca Radix UI disparava a exceção fatal `Uncaught Error: Tooltip must be used within TooltipProvider`.
+  3. Sem um `ErrorBoundary` na árvore de componentes React, a exceção descarregava a árvore inteira, provocando tela preta sem feedback ao usuário.
+  4. Em desenvolvimento, ao acessar `/demo` com a flag `VITE_MODO_DEMO` desligada, a aplicação redirecionava silenciosamente para `/processos`, sem orientar o desenvolvedor sobre como habilitar a demonstração comercial.
+- **Decisão:**
+  1. **Centralização do `TooltipProvider`:** Inserção de um único `TooltipProvider` com `delayDuration={200}` na raiz de `apps/web/src/App.tsx`, cobrindo globalmente a casca operacional, a demonstração comercial e a rota `/_design`. Provedores duplicados em `DesignPage.tsx` foram removidos.
+  2. **Implementação de `ErrorBoundary` Global (`apps/web/src/components/ErrorBoundary.tsx`):**
+     - Captura exceções não tratadas de renderização de componentes filhos via `componentDidCatch` e `getDerivedStateFromError`.
+     - Registra o erro detalhado no console do navegador (`console.error`).
+     - Renderiza tela no tema escuro oficial do sistema com aviso amigável em português: *"Algo deu errado. Recarregue a página."* e botão "Recarregar" que executa `window.location.reload()`, impedindo telas pretas silenciosas.
+  3. **Página Informativa de Demonstração Desligada (`apps/web/src/pages/DemoDesligadaPage.tsx`):**
+     - Em ambiente de desenvolvimento (`import.meta.env.DEV`), caso `/demo` seja acessada sem `VITE_MODO_DEMO=true`, exibe mensagem explicativa: *"A demonstração está desligada. Defina VITE_MODO_DEMO=true em apps/web/.env e reinicie o servidor."*.
+     - Condicionada estritamente a `import.meta.env.DEV`, sendo 100% eliminada via tree-shaking pelo Rollup no build de produção.
+  4. **Acessibilidade em Links de Menu Recolhidos:** Adição de `aria-label={isCollapsed && !isMobileDrawer ? item.title : undefined}` em `Sidebar.tsx` para assegurar que leitores de tela identifiquem links de ícones isolados sem quebra de acessibilidade WAI-ARIA.
+- **Motivo:** Garante robustez contra falhas de contexto do Radix UI, elimina telas pretas inesperadas com tratamento de erro resiliente e melhora a experiência de desenvolvimento e homologação da demonstração.
+
+
 
 
 

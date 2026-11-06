@@ -91,3 +91,28 @@ tr.table-row {
   height: var(--table-row-height);
   min-height: var(--table-row-height);
 }
+
+/* Barras de rolagem globais padronizadas no tema escuro */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-elevated) var(--color-bg);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-elevated);
+  border-radius: var(--radius-input);
+  border: 1px solid var(--color-border);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-hover);
+}

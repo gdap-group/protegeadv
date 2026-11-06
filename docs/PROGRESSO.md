@@ -372,8 +372,71 @@ Este documento registra o histórico de tarefas executadas, decisões tomadas e 
   - Total de 62 testes automatizados passando no monorepo (56 em `apps/web`).
 - [x] Documentação atualizada em `docs/DECISOES.md` (ADR 016) e `docs/PROGRESSO.md`.
 
+---
+
+## [2026-11-05] Conclusão do Passo 3.5: Polimento Visual e Demonstração Comercial Navegável com Dados Fictícios (/demo)
+
+### O que foi feito:
+- [x] **Parte A — Polimento Visual e Governança:**
+  - `CommandPalette.tsx`: Nomes de módulos formatados em caixa normal e peso regular (`font-normal normal-case` — "Processos", "Publicações", etc.) e título da seção atualizado de "MÓDULOS PERMITIDOS" para "Ir para".
+  - Scrollbars globais no tema escuro: estilização aplicada em `apps/web/src/index.css` utilizando estritamente variáveis de cor de `theme.css` (`scrollbar-color` e seletores `::-webkit-scrollbar` para trilha e polegar).
+  - Unificação de `zod-pt.ts`: remoção do arquivo duplicado `apps/web/src/lib/zod-pt.ts`, mantendo a fonte única em `packages/shared/src/zod-pt.ts` importada por `FormularioEmPainel.tsx` e exportada via `@protege/shared`.
+- [x] **Parte B — Módulo e Rota de Demonstração Comercial (`/demo`):**
+  - Isolamento estrito de dados fictícios em `apps/web/src/demo/dados-demo.ts` (único arquivo contendo mocks, zero poluição no código de produção).
+  - Cálculo dinâmico de datas relativas com `diasRelativos(n)` para que prazos e intimações nunca pareçam defasados.
+  - Geração de 30 processos fictícios com números CNJ válidos verificados por `validarNumeroCNJ` (mod 97), partes representativas, tribunais brasileiros e fases processuais.
+  - Banner fixo de transparência no topo de todas as telas: *"Demonstração com dados fictícios"*.
+  - 5 telas de demonstração interativas:
+    1. **Processos (Lista):** 30 processos, filtros rápidos com contagem (Todos, Ativos, Com Prazo), busca textual, ordenação por coluna, paginação TanStack e drawer de novo processo via `FormularioEmPainel`.
+    2. **Processos (Ficha / PaginaDetalhe):** identificador CNJ em fonte mono, badge multimodal (ícone + texto), 5 abas navegáveis (Resumo, Andamentos, Publicações, Compromissos, Documentos) e card lateral de dados rápidos.
+    3. **Publicações (Caixa de Entrada):** destaque visual de não lidas, drawer lateral (`Sheet`) para leitura do inteiro teor, botão "Marcar como lida" reativo que decrementa o contador da sidebar, e modal de vinculação a processos.
+    4. **Agenda:** grade de mês dinâmica, navegação de meses (`<`, `>`), destaque multimodal de prazo vencido com ícone `AlertTriangle` + texto "Prazo Vencido" e estilização semântica de perigo.
+    5. **Pessoas:** diretório com busca textual, ficha de detalhes de cliente/parte e listagem de processos vinculados.
+- [x] **Ativação Segura e Verificação de Tree-Shaking:**
+  - Ativação sob demanda via variável de ambiente `VITE_MODO_DEMO=true` documentada em `.env.example`.
+  - Importação dinâmica com `React.lazy` no `App.tsx`.
+  - Verificação automatizada nos artefatos de compilação:
+    - Com `VITE_MODO_DEMO=false`: bundle de produção NÃO contém as rotas `/demo` nem o texto do banner.
+    - Com `VITE_MODO_DEMO=true`: módulo de demonstração é incluído em chunk isolado.
+- [x] **Testes Automatizados e Governança:**
+  - 13 novos testes automatizados em `apps/web/src/demo/demo.test.tsx` cobrindo as 5 telas, acessibilidade WAI-ARIA (`vitest-axe`), filtros, busca, paginação, reatividade de estado e teste estrito garantindo que nenhum arquivo de produção fora de `src/demo` importa `dados-demo.ts`.
+  - Total de **75 testes unitários e de integração aprovados** no monorepo.
+  - Linters (`pnpm lint`) e checagem de tipos (`pnpm typecheck`) 100% limpos sem advertências.
+  - Registro de ADR 017 em `docs/DECISOES.md` com compromisso explícito de **remoção mandatória no Passo 10.5**.
+
+---
+
+## [2026-11-06] Correção de Tooltip fora do Provider, ErrorBoundary e Aviso de Demonstração Desligada
+
+### O que foi feito:
+- [x] **Diagnóstico da Causa Raiz do Erro de Tooltip e Tela Preta:**
+  - Em visualização mobile (< 768px, como 376px), a barra lateral desktop permanecia montada no Virtual DOM do React (`hidden md:block` oculta apenas via CSS).
+  - Com a sidebar recolhida (`isCollapsed = true`), cada item renderizava `<Tooltip>`. Como nenhum `<TooltipProvider>` envolvia a raiz da aplicação (`App.tsx`), o Radix UI disparava `Uncaught Error: Tooltip must be used within TooltipProvider`, descarregando a árvore React inteira e deixando a tela preta.
+  - Testes anteriores não detectavam o problema porque testavam o Tooltip isoladamente em `components.test.tsx` (onde o provider era montado manualmente) ou testavam o menu sempre no estado expandido (`isCollapsed = false`).
+- [x] **Provedor Global de Tooltip:**
+  - Inserido um único `<TooltipProvider delayDuration={200}>` na raiz de [apps/web/src/App.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/App.tsx), cobrindo a casca (`MainLayout`), a demonstração (`/demo`) e a rota `/_design`.
+  - Removido o provedor duplicado em [apps/web/src/pages/DesignPage.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/pages/DesignPage.tsx).
+  - Adicionado `aria-label` condicional aos links de navegação recolhidos em [apps/web/src/components/layout/Sidebar.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/layout/Sidebar.tsx).
+- [x] **ErrorBoundary Global contra Tela Preta:**
+  - Criado [apps/web/src/components/ErrorBoundary.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/components/ErrorBoundary.tsx) na raiz de `App.tsx`.
+  - Captura qualquer falha imprevista de renderização, exibe tela no tema escuro do sistema com a mensagem em português: *"Algo deu errado. Recarregue a página."*, botão "Recarregar" (`window.location.reload()`) e registra o erro no console (`console.error`).
+- [x] **Aviso de Demonstração Desligada em Desenvolvimento:**
+  - Criado [apps/web/src/pages/DemoDesligadaPage.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/pages/DemoDesligadaPage.tsx).
+  - Em desenvolvimento (`import.meta.env.DEV`), ao acessar `/demo` sem `VITE_MODO_DEMO=true`, orienta o usuário: *"A demonstração está desligada. Defina VITE_MODO_DEMO=true em apps/web/.env e reinicie o servidor."*.
+  - No build de produção, a página e o módulo de demonstração são 100% eliminados via tree-shaking pelo Rollup quando `VITE_MODO_DEMO=false`.
+- [x] **Auditoria de Service Worker / Workbox:**
+  - Confirmada a ausência total de service workers, bibliotecas PWA ou workbox no repositório. As mensagens do console observadas vinham de outro aplicativo que executou previamente na mesma porta (`localhost:5173`).
+- [x] **Testes Automatizados com o `<App />` Real:**
+  - Atualizado [apps/web/src/App.test.tsx](file:///c:/Users/eu/Documents/P4D/Projetos/Protege%20ADV/apps/web/src/App.test.tsx) renderizando `<App />` completo em 1280px e 376px, com a barra recolhida, abrindo a gaveta mobile e focando no link com tooltip (confirmado que o teste falhava na ausência do `TooltipProvider`).
+  - Testes cobrindo `/demo` ligada e desligada em desenvolvimento, e teste do `ErrorBoundary` com simulação de erro de renderização e clique no botão de recarregar.
+  - **79 testes aprovados** (100% de sucesso no monorepo).
+  - Linters (`pnpm lint`) e checagem de tipos (`pnpm typecheck`) 100% limpos.
+  - Verificação de build com e sem `VITE_MODO_DEMO` confirmando ausência total de strings mockadas no bundle padrão de produção.
+  - Registro da ADR 018 em `docs/DECISOES.md`.
+
 ### Próximos passos:
-- [ ] Implementar a Caixa de Entrada de Publicações do DJEN (Módulo 7 do PRD / Fase 4).
+- [ ] Iniciar a **Fase 4: Coleta de Publicações e Andamentos**:
+  - Passo 4.1: Modelagem e worker de polling do DJEN / Diários Eletrônicos (pacote `packages/sources` e serviço de ingestão multi-tenant).
 
 
 

@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { PermissoesProvider } from './contexts/PermissoesContext';
+import { TooltipProvider } from './components/ui/tooltip';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { MainLayout } from './components/layout/MainLayout';
 import ProcessosPage from './pages/ProcessosPage';
 import PublicacoesPage from './pages/PublicacoesPage';
@@ -15,35 +17,61 @@ const DesignPage = import.meta.env.DEV
   ? React.lazy(() => import('./pages/DesignPage'))
   : null;
 
+// Em produção, se VITE_MODO_DEMO for falso, o Rollup elimina completamente o DemoApp e os dados mockados
+const DemoApp = (import.meta.env.DEV || import.meta.env.VITE_MODO_DEMO === 'true')
+  ? React.lazy(() => import('./demo/DemoApp'))
+  : null;
+
+// Página de aviso de demonstração desligada só existe em ambiente de desenvolvimento
+const DemoDesligadaPage = import.meta.env.DEV
+  ? React.lazy(() => import('./pages/DemoDesligadaPage'))
+  : null;
+
 export default function App() {
+  const isModoDemo = import.meta.env.VITE_MODO_DEMO === 'true';
+
   return (
-    <PermissoesProvider>
-      <BrowserRouter>
-        <Suspense fallback={<div className="min-h-screen bg-[var(--color-bg)]" />}>
-          <Routes>
-            {/* Rota de Design System (fora da casca e estritamente em desenvolvimento) */}
-            {import.meta.env.DEV && DesignPage && (
-              <Route path="/_design" element={<DesignPage />} />
-            )}
+    <ErrorBoundary>
+      <TooltipProvider delayDuration={200}>
+        <PermissoesProvider>
+          <BrowserRouter>
+            <Suspense fallback={<div className="min-h-screen bg-[var(--color-bg)]" />}>
+              <Routes>
+                {/* Rota de Design System (fora da casca e estritamente em desenvolvimento) */}
+                {import.meta.env.DEV && DesignPage && (
+                  <Route path="/_design" element={<DesignPage />} />
+                )}
 
-            {/* Casca do sistema envolvendo as páginas operacionais */}
-            <Route element={<MainLayout />}>
-              <Route path="/" element={<Navigate to="/processos" replace />} />
-              <Route path="/processos" element={<ProcessosPage />} />
-              <Route path="/publicacoes" element={<PublicacoesPage />} />
-              <Route path="/agenda" element={<AgendaPage />} />
-              <Route path="/pessoas" element={<PessoasPage />} />
-              <Route path="/ged" element={<GedPage />} />
-              <Route path="/contratos" element={<ContratosPage />} />
-              <Route path="/empresa" element={<EmpresaPage />} />
-              <Route path="/configuracoes" element={<ConfiguracoesPage />} />
-            </Route>
+                {/* Rota de Demonstração (isolada com dados fictícios, ativada via VITE_MODO_DEMO=true) */}
+                {isModoDemo && DemoApp && (
+                  <Route path="/demo/*" element={<DemoApp />} />
+                )}
 
-            {/* Rota padrão para caminhos inexistentes */}
-            <Route path="*" element={<Navigate to="/processos" replace />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </PermissoesProvider>
+                {/* Rota informativa de demonstração desligada (apenas em desenvolvimento quando desligada) */}
+                {import.meta.env.DEV && !isModoDemo && DemoDesligadaPage && (
+                  <Route path="/demo/*" element={<DemoDesligadaPage />} />
+                )}
+
+                {/* Casca do sistema envolvendo as páginas operacionais */}
+                <Route element={<MainLayout />}>
+                  <Route path="/" element={<Navigate to="/processos" replace />} />
+                  <Route path="/processos" element={<ProcessosPage />} />
+                  <Route path="/publicacoes" element={<PublicacoesPage />} />
+                  <Route path="/agenda" element={<AgendaPage />} />
+                  <Route path="/pessoas" element={<PessoasPage />} />
+                  <Route path="/ged" element={<GedPage />} />
+                  <Route path="/contratos" element={<ContratosPage />} />
+                  <Route path="/empresa" element={<EmpresaPage />} />
+                  <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+                </Route>
+
+                {/* Rota padrão para caminhos inexistentes */}
+                <Route path="*" element={<Navigate to="/processos" replace />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </PermissoesProvider>
+      </TooltipProvider>
+    </ErrorBoundary>
   );
 }

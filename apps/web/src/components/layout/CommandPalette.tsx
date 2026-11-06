@@ -101,7 +101,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               Nenhum módulo encontrado com esta busca.
             </Command.Empty>
 
-            <Command.Group heading="Módulos Permitidos" className="text-xs font-semibold text-[var(--color-muted)] px-2 py-1.5 uppercase tracking-wider">
+            <Command.Group
+              heading="Ir para"
+              className="text-xs font-normal text-[var(--color-muted)] px-2 py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-normal [&_[cmdk-group-heading]]:text-[var(--color-muted)] [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1 normal-case"
+            >
               {allowedItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -112,10 +115,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                       onOpenChange(false);
                       navigate(item.path);
                     }}
-                    className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-input)] px-3 py-2 text-sm text-[var(--color-text)] transition-colors hover:bg-[var(--color-elevated)] aria-selected:bg-[var(--color-elevated)] aria-selected:text-[var(--color-glow)] outline-none"
+                    className="flex cursor-pointer items-center gap-3 rounded-[var(--radius-input)] px-3 py-2 text-sm font-normal normal-case text-[var(--color-text)] transition-colors hover:bg-[var(--color-elevated)] aria-selected:bg-[var(--color-elevated)] aria-selected:text-[var(--color-glow)] outline-none"
                   >
                     <Icon className="h-4 w-4 shrink-0 text-[var(--color-glow)]" aria-hidden="true" />
-                    <span>{item.title}</span>
+                    <span className="font-normal normal-case">{item.title}</span>
                   </Command.Item>
                 );
               })}
